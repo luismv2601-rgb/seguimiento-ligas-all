@@ -194,7 +194,7 @@ def main():
         "partidos_secuenciales", "pct_secuenciales",
     ])
     asegurar_encabezados(ws_racha, [
-        "liga_id", "liga", "pais", "racha_actual", "umbral_alerta", "alerta_activa",
+        "liga_id", "liga", "pais", "racha_actual", "umbral_alerta", "racha_maxima", "alerta_activa",
         "ultimo_partido", "fecha_ultimo_partido", "ultima_actualizacion",
     ])
     asegurar_encabezados(ws_ranking, [
@@ -227,7 +227,8 @@ def main():
         ])
         filas_racha_todas.append([
             liga["id"], liga["nombre"], liga["pais"], analisis["racha_actual"], analisis["umbral_alerta"],
-            analisis["alerta_activa"], analisis["ultimo_partido"], analisis["fecha_ultimo_partido"], hora_peru(),
+            analisis["racha_maxima"], analisis["alerta_activa"], analisis["ultimo_partido"],
+            analisis["fecha_ultimo_partido"], hora_peru(),
         ])
         filas_ranking_todas.extend(calcular_ranking_empates(filas_liga, liga))
 

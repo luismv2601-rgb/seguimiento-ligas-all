@@ -115,6 +115,7 @@ def cargar_estado_racha(ws_racha):
             "fila": i + 2,
             "racha_actual": int(row["racha_actual"] or 0),
             "umbral_alerta": int(row["umbral_alerta"] or 5),
+            "racha_maxima": int(row["racha_maxima"] or 0),
         }
     return estado
 
@@ -185,9 +186,10 @@ def main():
                 print("  Sin partidos nuevos.")
                 continue
 
-            info_racha = estado_racha.get(liga["id"], {"fila": None, "racha_actual": 0, "umbral_alerta": 5})
+            info_racha = estado_racha.get(liga["id"], {"fila": None, "racha_actual": 0, "umbral_alerta": 5, "racha_maxima": 0})
             racha_actual = info_racha["racha_actual"]
             umbral = info_racha["umbral_alerta"]
+            racha_maxima = info_racha["racha_maxima"]
             ultimos_no_empate = []
             ultimo_partido_texto = ""
             ultima_fecha = ""
@@ -211,6 +213,7 @@ def main():
                     ultimos_no_empate = []
                 else:
                     racha_actual += 1
+                    racha_maxima = max(racha_maxima, racha_actual)
                     ultimos_no_empate.append(fila)
                     if len(ultimos_no_empate) > umbral:
                         ultimos_no_empate.pop(0)
@@ -227,6 +230,7 @@ def main():
                 "pais": liga["pais"],
                 "racha_actual": racha_actual,
                 "umbral_alerta": umbral,
+                "racha_maxima": racha_maxima,
                 "alerta_activa": "SI" if racha_actual >= umbral else "NO",
                 "ultimo_partido": ultimo_partido_texto,
                 "fecha_ultimo_partido": ultima_fecha,
@@ -250,10 +254,10 @@ def main():
     batch_racha = []
     nuevas_filas_racha = []
     for act in actualizaciones_racha:
-        valores = [act["racha_actual"], act["umbral_alerta"], act["alerta_activa"],
+        valores = [act["racha_actual"], act["umbral_alerta"], act["racha_maxima"], act["alerta_activa"],
                    act["ultimo_partido"], act["fecha_ultimo_partido"], hora_peru()]
         if act["fila"]:
-            batch_racha.append({"range": f"D{act['fila']}:I{act['fila']}", "values": [valores]})
+            batch_racha.append({"range": f"D{act['fila']}:J{act['fila']}", "values": [valores]})
         else:
             nuevas_filas_racha.append([act["liga_id"], act["liga"], act["pais"]] + valores)
 
