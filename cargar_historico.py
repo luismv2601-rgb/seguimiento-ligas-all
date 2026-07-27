@@ -135,13 +135,19 @@ def calcular_analisis(filas_liga):
     racha_maxima = max(rachas) if rachas else 0
     ultimo_partido = filas_liga[-1] if filas_liga else None
 
+    total_partidos = len(filas_liga)
+    partidos_secuenciales = sum(1 for f in filas_liga if f["modalidad"] == "secuencial")
+    pct_secuenciales = round(100 * partidos_secuenciales / total_partidos, 1) if total_partidos else 0
+
     return {
-        "total_partidos": len(filas_liga),
+        "total_partidos": total_partidos,
         "total_empates": sum(1 for f in filas_liga if f["es_empate"] == "SI"),
         "promedio_racha": round(promedio, 2),
         "desviacion_std": round(desviacion, 2),
         "umbral_alerta": umbral,
         "racha_maxima": racha_maxima,
+        "partidos_secuenciales": partidos_secuenciales,
+        "pct_secuenciales": pct_secuenciales,
         "racha_actual": racha_actual,
         "alerta_activa": "SI" if racha_actual >= umbral else "NO",
         "ultimo_partido": (
@@ -185,6 +191,7 @@ def main():
     asegurar_encabezados(ws_analisis, [
         "liga_id", "liga", "pais", "total_partidos", "total_empates",
         "promedio_racha", "desviacion_std", "umbral_alerta", "racha_maxima",
+        "partidos_secuenciales", "pct_secuenciales",
     ])
     asegurar_encabezados(ws_racha, [
         "liga_id", "liga", "pais", "racha_actual", "umbral_alerta", "alerta_activa",
@@ -215,7 +222,7 @@ def main():
         filas_analisis_todas.append([
             liga["id"], liga["nombre"], liga["pais"], analisis["total_partidos"], analisis["total_empates"],
             analisis["promedio_racha"], analisis["desviacion_std"], analisis["umbral_alerta"],
-            analisis["racha_maxima"],
+            analisis["racha_maxima"], analisis["partidos_secuenciales"], analisis["pct_secuenciales"],
         ])
         filas_racha_todas.append([
             liga["id"], liga["nombre"], liga["pais"], analisis["racha_actual"], analisis["umbral_alerta"],
