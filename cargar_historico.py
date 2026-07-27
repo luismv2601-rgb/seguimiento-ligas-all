@@ -189,7 +189,7 @@ def main():
         "es_empate", "modalidad",
     ])
     asegurar_encabezados(ws_analisis, [
-        "liga_id", "liga", "pais", "temporadas_analizadas", "total_partidos", "total_empates",
+        "liga_id", "pais", "liga", "temporadas_analizadas", "total_partidos", "total_empates",
         "promedio_racha", "desviacion_std", "umbral_alerta", "racha_maxima",
         "partidos_secuenciales", "pct_secuenciales",
     ])
@@ -221,7 +221,7 @@ def main():
         analisis = calcular_analisis(filas_liga)
         temporadas_texto = ", ".join(str(t) for t in TEMPORADAS)
         filas_analisis_todas.append([
-            liga["id"], liga["nombre"], liga["pais"], temporadas_texto, analisis["total_partidos"], analisis["total_empates"],
+            liga["id"], liga["pais"], liga["nombre"], temporadas_texto, analisis["total_partidos"], analisis["total_empates"],
             analisis["promedio_racha"], analisis["desviacion_std"], analisis["umbral_alerta"],
             analisis["racha_maxima"], analisis["partidos_secuenciales"], analisis["pct_secuenciales"],
         ])
@@ -241,6 +241,7 @@ def main():
         ] for f in filas_partidos_todas])
 
     if filas_analisis_todas:
+        filas_analisis_todas.sort(key=lambda fila: fila[-1], reverse=True)
         append_en_lotes(ws_analisis, filas_analisis_todas)
     if filas_racha_todas:
         append_en_lotes(ws_racha, filas_racha_todas)
