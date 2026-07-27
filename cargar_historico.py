@@ -245,6 +245,7 @@ def main():
     if filas_racha_todas:
         append_en_lotes(ws_racha, filas_racha_todas)
     if filas_ranking_todas:
+        filas_ranking_todas.sort(key=lambda fila: fila[6], reverse=True)
         append_en_lotes(ws_ranking, filas_ranking_todas)
 
     ws_estado.append_row(["ultima_carga_historico", hora_peru()])
