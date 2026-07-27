@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.1.0 - 2026-07-27
+- README: referencia a la web complementaria `seguimiento-ligas-all-web` para visualización móvil
+
 ## v1.0.0 - 2026-07-27
 - `actualizar.py`: carga incremental de partidos nuevos, actualización de rachas en vivo y alertas de Calendar por transición (solo cuando un partido nuevo hace cruzar el umbral, no retroactivo)
 - `racha_maxima` en Racha_Actual: se actualiza como "récord corriendo" si la racha en vivo supera el máximo histórico

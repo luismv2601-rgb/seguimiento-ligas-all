@@ -104,4 +104,10 @@ Editar `ligas.json`, cambiar el flag `"activa"` de la liga deseada a `true` o `f
 
 ---
 
+## Visualización móvil
+
+Existe una página web complementaria para ver este seguimiento desde el celular: [`seguimiento-ligas-all-web`](https://github.com/luismv2601-rgb/seguimiento-ligas-all-web) — en vivo en https://luismv2601-rgb.github.io/seguimiento-ligas-all-web/. Lee el Sheet directamente como CSV público, así que no necesita ningún cambio en este repo salvo cuando cambien los `gid` de las pestañas.
+
+---
+
 Ver CHANGELOG.md para el historial de versiones.
