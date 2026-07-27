@@ -2,7 +2,7 @@ import os
 import json
 import time
 import statistics
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import requests
 import gspread
@@ -23,7 +23,7 @@ with open("ligas.json", encoding="utf-8") as f:
 
 
 def hora_peru():
-    return (datetime.utcnow() - timedelta(hours=5)).strftime("%Y-%m-%d %H:%M")
+    return (datetime.now(timezone.utc) - timedelta(hours=5)).strftime("%Y-%m-%d %H:%M")
 
 
 def conectar_google():
@@ -80,7 +80,7 @@ def construir_filas(fixtures, liga_nombre, liga_pais, temporada):
     modalidad = modalidad_por_ronda(fixtures)
     filas = []
     for fx in fixtures:
-        fecha_peru = datetime.utcfromtimestamp(fx["fixture"]["timestamp"]) - timedelta(hours=5)
+        fecha_peru = datetime.fromtimestamp(fx["fixture"]["timestamp"], tz=timezone.utc) - timedelta(hours=5)
         goles_local = fx["goals"]["home"]
         goles_visitante = fx["goals"]["away"]
         es_empate = goles_local == goles_visitante
