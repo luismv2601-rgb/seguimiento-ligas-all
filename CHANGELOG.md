@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.2.0 - 2026-07-27
+- `ligas.json` limpiado: se quitaron las 33 ligas inactivas del catálogo, queda solo con las 6 ligas activas
+
 ## v1.1.0 - 2026-07-27
 - README: referencia a la web complementaria `seguimiento-ligas-all-web` para visualización móvil
 

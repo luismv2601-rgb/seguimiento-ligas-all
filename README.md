@@ -17,7 +17,7 @@ Actualmente hay **6 ligas activas**, elegidas después de un rollout por etapas 
 | Liga MX | México |
 | Primera A | Colombia |
 
-El catálogo completo vive en `ligas.json` (39 ligas/torneos definidos, cada una con un flag `"activa": true/false`) — agregar o quitar una liga del seguimiento es solo cambiar ese flag, sin tocar código.
+`ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 
 Además del umbral de rachas, el sistema calcula:
 - **Modalidad de programación** (`secuencial` / `paralelo`): si los partidos de una misma ronda se juegan uno detrás del otro o varios al mismo tiempo (se considera solapamiento si dos partidos arrancan con menos de 2 horas de diferencia).
