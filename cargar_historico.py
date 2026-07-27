@@ -19,7 +19,7 @@ SCOPES = [
 ]
 
 with open("ligas.json", encoding="utf-8") as f:
-    LIGAS = json.load(f)
+    LIGAS = [liga for liga in json.load(f) if liga.get("activa", True)]
 
 
 def hora_peru():
@@ -69,14 +69,17 @@ def modalidad_por_ronda(fixtures):
 
     modalidad = {}
     for partidos in por_ronda.values():
-        horarios = [p["fixture"]["timestamp"] for p in partidos]
-        etiqueta = "paralelo" if len(horarios) != len(set(horarios)) else "secuencial"
+        conteo_horarios = {}
         for p in partidos:
-            modalidad[p["fixture"]["id"]] = etiqueta
+            ts = p["fixture"]["timestamp"]
+            conteo_horarios[ts] = conteo_horarios.get(ts, 0) + 1
+        for p in partidos:
+            ts = p["fixture"]["timestamp"]
+            modalidad[p["fixture"]["id"]] = "paralelo" if conteo_horarios[ts] > 1 else "secuencial"
     return modalidad
 
 
-def construir_filas(fixtures, liga_nombre, liga_pais, temporada):
+def construir_filas(fixtures, liga, temporada):
     modalidad = modalidad_por_ronda(fixtures)
     filas = []
     for fx in fixtures:
@@ -86,8 +89,9 @@ def construir_filas(fixtures, liga_nombre, liga_pais, temporada):
         es_empate = goles_local == goles_visitante
         filas.append({
             "fixture_id": fx["fixture"]["id"],
-            "liga": liga_nombre,
-            "pais": liga_pais,
+            "liga_id": liga["id"],
+            "liga": liga["nombre"],
+            "pais": liga["pais"],
             "temporada": temporada,
             "fecha": fecha_peru.strftime("%Y-%m-%d"),
             "hora_peru": fecha_peru.strftime("%H:%M"),
@@ -143,7 +147,7 @@ def calcular_analisis(filas_liga):
     }
 
 
-def calcular_ranking_empates(filas_liga, liga_nombre):
+def calcular_ranking_empates(filas_liga, liga):
     equipos = {}
     for fila in filas_liga:
         for equipo in (fila["equipo_local"], fila["equipo_visitante"]):
@@ -155,7 +159,7 @@ def calcular_ranking_empates(filas_liga, liga_nombre):
     filas = []
     for equipo, stats in equipos.items():
         pct = round(100 * stats["empates"] / stats["total"], 1) if stats["total"] else 0
-        filas.append([equipo, liga_nombre, stats["total"], stats["empates"], pct])
+        filas.append([equipo, liga["id"], liga["nombre"], liga["pais"], stats["total"], stats["empates"], pct])
     return filas
 
 
@@ -169,19 +173,21 @@ def main():
     ws_estado = sheet.worksheet("Estado")
 
     asegurar_encabezados(ws_partidos, [
-        "fixture_id", "liga", "pais", "temporada", "fecha", "hora_peru",
+        "fixture_id", "liga_id", "liga", "pais", "temporada", "fecha", "hora_peru",
         "equipo_local", "equipo_visitante", "goles_local", "goles_visitante",
         "es_empate", "modalidad",
     ])
     asegurar_encabezados(ws_analisis, [
-        "liga", "pais", "total_partidos", "total_empates",
+        "liga_id", "liga", "pais", "total_partidos", "total_empates",
         "promedio_racha", "desviacion_std", "umbral_alerta", "racha_maxima",
     ])
     asegurar_encabezados(ws_racha, [
-        "liga", "racha_actual", "umbral_alerta", "alerta_activa",
+        "liga_id", "liga", "pais", "racha_actual", "umbral_alerta", "alerta_activa",
         "ultimo_partido", "fecha_ultimo_partido", "ultima_actualizacion",
     ])
-    asegurar_encabezados(ws_ranking, ["equipo", "liga", "total_partidos", "total_empates", "pct_empates"])
+    asegurar_encabezados(ws_ranking, [
+        "equipo", "liga_id", "liga", "pais", "total_partidos", "total_empates", "pct_empates",
+    ])
     asegurar_encabezados(ws_estado, ["clave", "valor"])
 
     filas_partidos_todas = []
@@ -190,11 +196,11 @@ def main():
     filas_ranking_todas = []
 
     for liga in LIGAS:
-        print(f"Procesando {liga['nombre']} ({liga['pais']})...")
+        print(f"Procesando {liga['nombre']} ({liga['pais']}) [id {liga['id']}]...")
         filas_liga = []
         for temporada in TEMPORADAS:
             fixtures = obtener_fixtures(liga["id"], temporada)
-            filas_liga.extend(construir_filas(fixtures, liga["nombre"], liga["pais"], temporada))
+            filas_liga.extend(construir_filas(fixtures, liga, temporada))
             time.sleep(1)
 
         filas_liga.sort(key=lambda f: (f["fecha"], f["hora_peru"]))
@@ -202,21 +208,21 @@ def main():
 
         analisis = calcular_analisis(filas_liga)
         filas_analisis_todas.append([
-            liga["nombre"], liga["pais"], analisis["total_partidos"], analisis["total_empates"],
+            liga["id"], liga["nombre"], liga["pais"], analisis["total_partidos"], analisis["total_empates"],
             analisis["promedio_racha"], analisis["desviacion_std"], analisis["umbral_alerta"],
             analisis["racha_maxima"],
         ])
         filas_racha_todas.append([
-            liga["nombre"], analisis["racha_actual"], analisis["umbral_alerta"], analisis["alerta_activa"],
-            analisis["ultimo_partido"], analisis["fecha_ultimo_partido"], hora_peru(),
+            liga["id"], liga["nombre"], liga["pais"], analisis["racha_actual"], analisis["umbral_alerta"],
+            analisis["alerta_activa"], analisis["ultimo_partido"], analisis["fecha_ultimo_partido"], hora_peru(),
         ])
-        filas_ranking_todas.extend(calcular_ranking_empates(filas_liga, liga["nombre"]))
+        filas_ranking_todas.extend(calcular_ranking_empates(filas_liga, liga))
 
         print(f"  {analisis['total_partidos']} partidos | umbral: {analisis['umbral_alerta']} | racha actual: {analisis['racha_actual']}")
 
     if filas_partidos_todas:
         append_en_lotes(ws_partidos, [[
-            f["fixture_id"], f["liga"], f["pais"], f["temporada"], f["fecha"], f["hora_peru"],
+            f["fixture_id"], f["liga_id"], f["liga"], f["pais"], f["temporada"], f["fecha"], f["hora_peru"],
             f["equipo_local"], f["equipo_visitante"], f["goles_local"], f["goles_visitante"],
             f["es_empate"], f["modalidad"],
         ] for f in filas_partidos_todas])
