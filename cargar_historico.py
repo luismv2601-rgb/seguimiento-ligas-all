@@ -60,8 +60,12 @@ def obtener_fixtures(liga_id, temporada):
     return data.get("response", [])
 
 
+DURACION_PARTIDO_SEGUNDOS = 2 * 60 * 60  # se asume ~2 horas de duracion por partido
+
+
 def modalidad_por_ronda(fixtures):
-    """'paralelo' si dos o mas partidos de la misma ronda comparten horario de inicio, si no 'secuencial'."""
+    """'paralelo' si el partido se solapa en el tiempo con otro de su misma ronda
+    (diferencia de inicio menor a la duracion de un partido), si no 'secuencial'."""
     por_ronda = {}
     for fx in fixtures:
         ronda = fx["league"]["round"]
@@ -69,13 +73,14 @@ def modalidad_por_ronda(fixtures):
 
     modalidad = {}
     for partidos in por_ronda.values():
-        conteo_horarios = {}
-        for p in partidos:
-            ts = p["fixture"]["timestamp"]
-            conteo_horarios[ts] = conteo_horarios.get(ts, 0) + 1
-        for p in partidos:
-            ts = p["fixture"]["timestamp"]
-            modalidad[p["fixture"]["id"]] = "paralelo" if conteo_horarios[ts] > 1 else "secuencial"
+        n = len(partidos)
+        for i in range(n):
+            ts_i = partidos[i]["fixture"]["timestamp"]
+            se_solapa = any(
+                abs(ts_i - partidos[j]["fixture"]["timestamp"]) < DURACION_PARTIDO_SEGUNDOS
+                for j in range(n) if j != i
+            )
+            modalidad[partidos[i]["fixture"]["id"]] = "paralelo" if se_solapa else "secuencial"
     return modalidad
 
 
