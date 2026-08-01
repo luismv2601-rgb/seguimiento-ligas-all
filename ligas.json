@@ -4,5 +4,8 @@
   { "id": 71,  "nombre": "Serie A",                       "pais": "Brasil",         "region": "Sudamérica", "activa": true },
   { "id": 128, "nombre": "Liga Profesional Argentina",    "pais": "Argentina",      "region": "Sudamérica", "activa": true },
   { "id": 262, "nombre": "Liga MX",                       "pais": "México",         "region": "Centroamérica", "activa": true },
-  { "id": 239, "nombre": "Primera A",                     "pais": "Colombia",       "region": "Sudamérica", "activa": true }
+  { "id": 239, "nombre": "Primera A",                     "pais": "Colombia",       "region": "Sudamérica", "activa": true },
+  { "id": 116, "nombre": "Premier League",                "pais": "Bielorrusia",    "region": "Europa",     "activa": true },
+  { "id": 342, "nombre": "Premier League",                "pais": "Armenia",        "region": "Europa",     "activa": true },
+  { "id": 365, "nombre": "Virsliga",                      "pais": "Letonia",        "region": "Europa",     "activa": true }
 ]
