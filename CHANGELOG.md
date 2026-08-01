@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.0 - 2026-08-01
+- Google Cloud Scheduler pasa a ser el disparador principal de `actualizar.yml`: job `actualizar-seguimiento-ligas` (`us-central1`, cron horario, zona `America/Lima`) que llama al endpoint `workflow_dispatch` de la API de GitHub
+- El cron `schedule` de GitHub Actions se mantiene como respaldo. Se midieron sus disparos reales: descarta ~1 de cada 3, se retrasa hasta ~90 min y deja huecos de hasta 4h en la franja nocturna donde terminan los partidos sudamericanos
+- Sin costo adicional: el tier gratis de Cloud Scheduler cubre 3 jobs y el consumo de API-Football sube a ~380 requests/día, muy por debajo del plan Pro
+- README: sección nueva "Quién dispara `actualizar.yml`" con la config del job y el vencimiento del PAT (1-ago-2027)
+
 ## v1.2.0 - 2026-07-27
 - `ligas.json` limpiado: se quitaron las 33 ligas inactivas del catálogo, queda solo con las 6 ligas activas
 

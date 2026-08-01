@@ -33,7 +33,7 @@ API-Football (api-sports.io)
         ├──► cargar_historico.py  (una sola vez / bajo demanda)
         │         └──► carga 2024+2025, calcula el baseline estadístico
         │
-        └──► actualizar.py  (cada 2 horas, GitHub Actions)
+        └──► actualizar.py  (cada hora, Google Cloud Scheduler)
                   └──► carga partidos nuevos, actualiza rachas, dispara alertas
 
                             │
@@ -96,7 +96,26 @@ Cuenta de servicio con las siguientes APIs habilitadas: **Google Sheets API**, *
 ### Workflows de GitHub Actions
 
 - **`cargar_historico.yml`** — manual (`workflow_dispatch`). Correrlo solo cuando se necesite una carga histórica completa (ej. al agregar una liga nueva, o para hacer un re-baseline).
-- **`actualizar.yml`** — automático, cron cada 2 horas (`0 */2 * * *`), más disparo manual disponible. Este es el que mantiene el sistema al día.
+- **`actualizar.yml`** — el que mantiene el sistema al día. Tiene dos disparadores (ver abajo), más disparo manual disponible.
+
+### Quién dispara `actualizar.yml`
+
+**Google Cloud Scheduler es el disparador principal**, y el cron de GitHub quedó como respaldo. Los dos conviven a propósito.
+
+| Disparador | Frecuencia | Rol |
+|---|---|---|
+| Google Cloud Scheduler (job `actualizar-seguimiento-ligas`) | cada hora en punto, `America/Lima` | Principal |
+| `schedule` de GitHub Actions (`0 */2 * * *`) | ~8 veces al día, irregular | Respaldo |
+
+El motivo es que los `schedule` de GitHub Actions son best-effort: en la práctica descartan ~1 de cada 3 disparos y se retrasan hasta ~90 minutos, dejando huecos de hasta 4 horas justo en la franja nocturna donde terminan los partidos sudamericanos. Cloud Scheduler sí es puntual.
+
+Se dejó el cron de GitHub porque si el job de Cloud Scheduler falla, **falla en silencio**: el sistema degrada a las ~8 corridas diarias en vez de quedarse en cero.
+
+El job hace `POST` a `https://api.github.com/repos/luismv2601-rgb/seguimiento-ligas-all/actions/workflows/actualizar.yml/dispatches` con cuerpo `{"ref":"master"}`, y se autentica con un PAT fine-grained de GitHub (`cloud-scheduler-ligas`, permiso *Actions: Read and write*) enviado en el header `Authorization`.
+
+> ⚠️ **El PAT vence el 1 de agosto de 2027.** Cuando venza, el job empieza a recibir 401 y deja de disparar sin ninguna alerta. Los logs del job en Cloud Scheduler son el lugar donde se ve.
+
+Costo: USD 0 — Cloud Scheduler incluye 3 jobs gratis por cuenta de facturación y este usa 1 (GCP igual exige tener facturación habilitada).
 
 ### Agregar o quitar una liga
 
