@@ -28,6 +28,21 @@ def hora_peru():
     return (datetime.now(timezone.utc) - timedelta(hours=5)).strftime("%Y-%m-%d %H:%M")
 
 
+# Una alerta solo tiene sentido si el partido que cruzo el umbral es reciente.
+# Al sumar una liga con la temporada en curso entran cientos de partidos de golpe,
+# y sin este filtro cada cruce historico generaria un evento de Calendar fechado hoy.
+DIAS_MAX_PARA_ALERTAR = 2
+
+
+def partido_reciente(fecha_partido):
+    try:
+        fecha = datetime.strptime(fecha_partido, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return False
+    hoy = (datetime.now(timezone.utc) - timedelta(hours=5)).date()
+    return (hoy - fecha).days <= DIAS_MAX_PARA_ALERTAR
+
+
 def conectar_google():
     creds_json_env = os.environ.get("GOOGLE_CREDENTIALS_JSON")
     if creds_json_env:
@@ -163,6 +178,7 @@ def main():
     actualizaciones_racha = []
     equipos_tocados = set()  # (liga_id, equipo) modificados en esta corrida
     errores = []
+    alertas_omitidas = 0
 
     for liga in LIGAS:
         try:
@@ -218,7 +234,11 @@ def main():
                     if len(ultimos_no_empate) > umbral:
                         ultimos_no_empate.pop(0)
                     if racha_actual == umbral:
-                        crear_alerta_calendar(calendar_service, liga["nombre"], liga["pais"], umbral, ultimos_no_empate)
+                        if partido_reciente(fila["fecha"]):
+                            crear_alerta_calendar(calendar_service, liga["nombre"], liga["pais"], umbral, ultimos_no_empate)
+                        else:
+                            alertas_omitidas += 1
+                            print(f"  Cruce de umbral el {fila['fecha']} (mas de {DIAS_MAX_PARA_ALERTAR} dias): no se alerta.")
 
                 ultimo_partido_texto = f"{fila['equipo_local']} {fila['goles_local']}-{fila['goles_visitante']} {fila['equipo_visitante']}"
                 ultima_fecha = fila["fecha"]
@@ -293,6 +313,8 @@ def main():
     print("\n===== RESUMEN =====")
     print(f"Partidos nuevos: {len(filas_partidos_nuevas)}")
     print(f"Ligas con actividad: {len(actualizaciones_racha)}")
+    if alertas_omitidas:
+        print(f"Alertas omitidas por ser cruces viejos: {alertas_omitidas}")
     if errores:
         print(f"Errores: {len(errores)}")
 

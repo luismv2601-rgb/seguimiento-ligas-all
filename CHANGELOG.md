@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.5.0 - 2026-08-01
+- 11 ligas europeas nuevas: Bielorrusia (116), Armenia (342), Letonia (365), Noruega (103), Suecia (113), Rumania (283), Rusia (235), Suiza (207), Dinamarca (119), Escocia (179) y Austria (218). De 6 a 17 ligas activas
+- **Corrección:** `actualizar.py` creaba una alerta de Calendar por cada cruce de umbral al incorporar una temporada entera de golpe. Al sumar las 8 ligas con temporada en curso se generaron 11 eventos fechados hoy por cruces de marzo, abril y mayo. Ahora solo alerta si el partido que cruzó el umbral tiene 2 días o menos (`DIAS_MAX_PARA_ALERTAR`), y reporta cuántas omitió
+- `estado_ligas.py` + workflow `estado_ligas.yml`: muestra si la temporada de una liga ya arrancó, cuántas fechas lleva y cuándo es el próximo partido. Sirve para decidir el momento de sumar una liga
+- `Analisis 2` unificada en una sola tabla (antes eran dos), con `liga_id`, `pais` y `racha_maxima`
+
 ## v1.4.0 - 2026-08-01
 - **Corrección importante:** `cargar_historico.py` duplicaba todos los datos de las ligas ya cargadas. Procesaba todas las ligas activas y hacía `append` sin deduplicar, así que correrlo para sumar una liga nueva repetía el histórico completo de las anteriores en las 4 pestañas
 - Ahora es idempotente: omite entera cualquier liga que ya tenga fila en `Analisis` y filtra los partidos por `fixture_id`. Correrlo dos veces no cambia nada

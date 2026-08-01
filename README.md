@@ -62,6 +62,12 @@ API-Football (api-sports.io)
 
 **Estado** — bitácora simple (`clave, valor`) con la fecha de la última carga/ejecución y errores si los hay.
 
+**Analisis 2** — reporte derivado, una fila por liga: cuántas rachas alcanzaron el **doble** del umbral por temporada, qué porcentaje representan sobre los empates de esa temporada, y los largos concretos. Se regenera entera con `analisis_extremos.yml` (manual); no la consume nada más.
+
+### Alertas de Calendar: solo si el cruce es reciente
+
+Una alerta se crea únicamente cuando un partido **de los últimos 2 días** (`DIAS_MAX_PARA_ALERTAR` en `actualizar.py`) hace que la racha alcance el umbral. El filtro existe porque al activar una liga con la temporada ya empezada entran cientos de partidos en una sola corrida, y sin él cada cruce histórico generaría un evento fechado hoy — pasó al sumar 8 ligas el 1-ago-2026 y creó 11 alertas falsas.
+
 ### `liga_id`, no nombre
 
 Varias ligas comparten nombre entre países (ej. "Serie A" en Italia y Brasil, "Primera División" en varios países de Sudamérica). Por eso todo el sistema agrupa por `liga_id` (el ID numérico de API-Football), no por el nombre — el nombre y el país son solo columnas de lectura.
