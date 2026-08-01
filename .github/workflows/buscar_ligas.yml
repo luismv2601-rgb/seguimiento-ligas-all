@@ -1,0 +1,29 @@
+name: Buscar Ligas
+
+on:
+  workflow_dispatch:
+    inputs:
+      paises:
+        description: 'Paises en ingles, separados por espacio (ej: Belarus Armenia Latvia)'
+        required: true
+        default: 'Belarus Armenia Latvia'
+
+jobs:
+  buscar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Buscar ligas
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+        run: python buscar_ligas.py ${{ inputs.paises }}
