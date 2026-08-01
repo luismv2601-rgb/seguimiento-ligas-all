@@ -1,0 +1,29 @@
+name: Estado Ligas
+
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: 'liga_id separados por espacio (ej: 39 140 135 78 61)'
+        required: true
+        default: '39 40 140 78 135 61 88 94 144 203 179 197 119 103 113 207 283 235 218'
+
+jobs:
+  estado:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Consultar estado
+        env:
+          FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+        run: python estado_ligas.py ${{ inputs.ids }}
