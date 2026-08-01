@@ -132,20 +132,22 @@ def main():
 
     enc1 = ["liga_id", "liga", "pais", "umbral", "doble_umbral"]
     for t in temporadas:
-        enc1 += [f"{t}_rachas", f"{t}_empates", f"{t}_pct"]
-    enc1 += ["total_rachas_sup", "total_rachas"]
+        enc1 += [f"{t}_rachas_>=doble", f"{t}_empates", f"{t}_pct_sobre_empates"]
+    enc1 += ["total_rachas_>=doble", "total_rachas"]
 
-    enc2 = ["liga_id", "liga", "pais", "doble_umbral"] + list(temporadas) + ["racha_en_curso"]
+    enc2 = ["liga_id", "liga", "pais", "doble_umbral"]
+    enc2 += [f"{t}_valores_>=doble" for t in temporadas]
+    enc2 += ["racha_en_curso"]
 
     contenido = [
-        [f"TABLA 1 - Rachas mayores o iguales al doble del umbral (actualizado {hora_peru()})"],
-        ["Por temporada: cuantas rachas alcanzaron el doble del umbral, y que % representan sobre los empates de esa temporada"],
+        [f"TABLA 1 - Rachas MAYORES O IGUALES al doble del umbral (actualizado {hora_peru()})"],
+        ["Por temporada: cuantas rachas llegaron a >= doble del umbral, y que % representan sobre los empates de esa temporada. El criterio es >=, no exactamente el doble: con doble=12 se cuentan 12, 13, 14..."],
         enc1,
     ]
     contenido += filas_t1
     contenido += [
         [],
-        ["TABLA 2 - Largos concretos de esas rachas, por temporada"],
+        ["TABLA 2 - Largos concretos de las rachas >= doble del umbral, por temporada"],
         ["La ultima columna es la racha que sigue viva hoy (0 si el ultimo partido fue empate)"],
         enc2,
     ]
