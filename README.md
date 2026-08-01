@@ -121,6 +121,14 @@ Costo: USD 0 — Cloud Scheduler incluye 3 jobs gratis por cuenta de facturació
 
 Editar `ligas.json`, cambiar el flag `"activa"` de la liga deseada a `true` o `false`. Si se activa una liga nueva, correr `cargar_historico.yml` manualmente para cargar su histórico 2024-2025 antes de que `actualizar.yml` empiece a mantenerla al día.
 
+**`cargar_historico.yml` es seguro de correr con ligas ya cargadas:** omite entera cualquier liga que ya tenga su fila en `Analisis`, y filtra los partidos por `fixture_id`. Correrlo dos veces no duplica nada.
+
+Antes de agregar una liga hay que verificar su ID contra la API con `buscar_ligas.yml` (input: nombres de países en inglés). Un `liga_id` equivocado no da error — la liga simplemente no trae partidos y queda muda. Ojo con los nombres: en varios países la liga llamada *"First League"* o *"1. Liga"* es la **segunda** división.
+
+### Re-baseline de una liga ya cargada
+
+`cargar_historico.yml` no sirve para esto, justamente porque no pisa datos existentes. Para recalcular el umbral de una liga que ya está cargada hay que borrarle a mano sus filas del Sheet (`Partidos`, `Analisis`, `Racha_Actual`, `Ranking_Empates`) y recién ahí correr el workflow.
+
 ---
 
 ## Visualización móvil

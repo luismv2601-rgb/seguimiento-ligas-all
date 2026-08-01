@@ -1,3 +1,12 @@
+"""Carga el historico 2024-2025 de las ligas activas y calcula su baseline estadistico.
+
+Es idempotente: se puede correr las veces que haga falta sin duplicar nada. Una liga
+que ya tiene datos en la pestana Analisis se omite entera, y los partidos se filtran
+por fixture_id, asi que agregar una liga nueva no toca a las que ya estaban.
+
+Para rehacer el baseline de una liga ya cargada (re-baseline) hay que borrarle
+primero sus filas del Sheet a mano; este script no pisa datos existentes.
+"""
 import os
 import json
 import time
@@ -47,6 +56,11 @@ def asegurar_encabezados(ws, encabezados):
 def append_en_lotes(ws, filas, tamano=1000):
     for i in range(0, len(filas), tamano):
         ws.append_rows(filas[i:i + tamano])
+
+
+def cargar_columna(ws, columna=1):
+    """Valores de una columna, sin encabezado, como set de strings limpios."""
+    return {str(v).strip() for v in ws.col_values(columna)[1:] if str(v).strip()}
 
 
 def obtener_fixtures(liga_id, temporada):
@@ -202,12 +216,22 @@ def main():
     ])
     asegurar_encabezados(ws_estado, ["clave", "valor"])
 
+    # Estado actual del Sheet, para no volver a subir lo que ya esta.
+    ligas_ya_cargadas = cargar_columna(ws_analisis)      # liga_id que ya tienen baseline
+    fixture_ids_existentes = cargar_columna(ws_partidos)  # partidos ya registrados
+
     filas_partidos_todas = []
     filas_analisis_todas = []
     filas_racha_todas = []
     filas_ranking_todas = []
+    ligas_omitidas = []
 
     for liga in LIGAS:
+        if str(liga["id"]) in ligas_ya_cargadas:
+            print(f"Omitiendo {liga['nombre']} ({liga['pais']}) [id {liga['id']}]: ya tiene baseline cargado.")
+            ligas_omitidas.append(liga)
+            continue
+
         print(f"Procesando {liga['nombre']} ({liga['pais']}) [id {liga['id']}]...")
         filas_liga = []
         for temporada in TEMPORADAS:
@@ -216,8 +240,15 @@ def main():
             time.sleep(1)
 
         filas_liga.sort(key=lambda f: (f["fecha"], f["hora_peru"]))
-        filas_partidos_todas.extend(filas_liga)
 
+        # Segunda red: aunque la liga sea nueva, nunca repetir un fixture_id ya presente.
+        nuevas = [f for f in filas_liga if str(f["fixture_id"]) not in fixture_ids_existentes]
+        fixture_ids_existentes.update(str(f["fixture_id"]) for f in nuevas)
+        if len(nuevas) != len(filas_liga):
+            print(f"  {len(filas_liga) - len(nuevas)} partidos ya estaban en el Sheet, no se repiten.")
+        filas_partidos_todas.extend(nuevas)
+
+        # El baseline se calcula sobre el historico completo, no solo sobre lo nuevo.
         analisis = calcular_analisis(filas_liga)
         temporadas_texto = ", ".join(str(t) for t in TEMPORADAS)
         filas_analisis_todas.append([
@@ -253,8 +284,12 @@ def main():
     ws_estado.append_row(["ultima_carga_historico", hora_peru()])
 
     print("\n===== RESUMEN =====")
-    print(f"Ligas procesadas: {len(LIGAS)}")
-    print(f"Partidos totales cargados: {len(filas_partidos_todas)}")
+    print(f"Ligas activas en ligas.json: {len(LIGAS)}")
+    print(f"Ligas omitidas (ya cargadas): {len(ligas_omitidas)}")
+    print(f"Ligas cargadas ahora: {len(filas_analisis_todas)}")
+    print(f"Partidos nuevos cargados: {len(filas_partidos_todas)}")
+    if not filas_analisis_todas:
+        print("Nada que hacer: todas las ligas activas ya tenian su historico cargado.")
 
 
 if __name__ == "__main__":

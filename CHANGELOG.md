@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.0 - 2026-08-01
+- **Corrección importante:** `cargar_historico.py` duplicaba todos los datos de las ligas ya cargadas. Procesaba todas las ligas activas y hacía `append` sin deduplicar, así que correrlo para sumar una liga nueva repetía el histórico completo de las anteriores en las 4 pestañas
+- Ahora es idempotente: omite entera cualquier liga que ya tenga fila en `Analisis` y filtra los partidos por `fixture_id`. Correrlo dos veces no cambia nada
+- `buscar_ligas.py` + workflow `buscar_ligas.yml`: consulta `/leagues` por país y muestra id, tipo, temporada actual y si cubre 2024+2025, para verificar un `liga_id` antes de agregarlo. Un ID equivocado no falla, solo deja la liga muda
+- README: aviso de que `cargar_historico.yml` es seguro de repetir, y sección sobre cómo hacer un re-baseline (hay que borrar las filas a mano primero)
+
 ## v1.3.0 - 2026-08-01
 - Google Cloud Scheduler pasa a ser el disparador principal de `actualizar.yml`: job `actualizar-seguimiento-ligas` (`us-central1`, cron horario, zona `America/Lima`) que llama al endpoint `workflow_dispatch` de la API de GitHub
 - El cron `schedule` de GitHub Actions se mantiene como respaldo. Se midieron sus disparos reales: descarta ~1 de cada 3, se retrasa hasta ~90 min y deja huecos de hasta 4h en la franja nocturna donde terminan los partidos sudamericanos
