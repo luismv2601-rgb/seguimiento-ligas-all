@@ -84,6 +84,8 @@ def main():
                 "liga": fila.get("liga", ""),
                 "pais": fila.get("pais", ""),
                 "umbral": entero(fila.get("umbral_alerta")),
+                # Mayor racha del baseline 2024-2025, tal como quedo en la pestana Analisis.
+                "racha_maxima": entero(fila.get("racha_maxima")),
             }
 
     por_liga = defaultdict(list)
@@ -115,7 +117,7 @@ def main():
             if largo >= doble:
                 sup_por_temp[str(temp).strip()].append(largo)
 
-        fila = [lid, info["liga"], info["pais"], umbral, doble]
+        fila = [lid, info["liga"], info["pais"], umbral, doble, info["racha_maxima"]]
         for t in temporadas:
             sup = sorted(sup_por_temp.get(t, []), reverse=True)
             emp = empates_por_temp.get(t, 0)
@@ -129,7 +131,7 @@ def main():
         fila += [en_curso[0] if en_curso else 0, total_sup, len(rachas)]
         filas_t1.append(fila)
 
-    enc1 = ["liga_id", "liga", "pais", "umbral", "doble_umbral"]
+    enc1 = ["liga_id", "liga", "pais", "umbral", "doble_umbral", "racha_maxima"]
     enc1 += list(temporadas)
     enc1 += ["racha_en_curso", "total_>=doble", "total_rachas"]
 
