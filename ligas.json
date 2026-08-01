@@ -7,5 +7,13 @@
   { "id": 239, "nombre": "Primera A",                     "pais": "Colombia",       "region": "Sudamérica", "activa": true },
   { "id": 116, "nombre": "Premier League",                "pais": "Bielorrusia",    "region": "Europa",     "activa": true },
   { "id": 342, "nombre": "Premier League",                "pais": "Armenia",        "region": "Europa",     "activa": true },
-  { "id": 365, "nombre": "Virsliga",                      "pais": "Letonia",        "region": "Europa",     "activa": true }
+  { "id": 365, "nombre": "Virsliga",                      "pais": "Letonia",        "region": "Europa",     "activa": true },
+  { "id": 103, "nombre": "Eliteserien",                   "pais": "Noruega",        "region": "Europa",     "activa": true },
+  { "id": 113, "nombre": "Allsvenskan",                   "pais": "Suecia",         "region": "Europa",     "activa": true },
+  { "id": 283, "nombre": "Liga I",                        "pais": "Rumania",        "region": "Europa",     "activa": true },
+  { "id": 235, "nombre": "Premier League",                "pais": "Rusia",          "region": "Europa",     "activa": true },
+  { "id": 207, "nombre": "Super League",                  "pais": "Suiza",          "region": "Europa",     "activa": true },
+  { "id": 119, "nombre": "Superliga",                     "pais": "Dinamarca",      "region": "Europa",     "activa": true },
+  { "id": 179, "nombre": "Premiership",                   "pais": "Escocia",        "region": "Europa",     "activa": true },
+  { "id": 218, "nombre": "Bundesliga",                    "pais": "Austria",        "region": "Europa",     "activa": true }
 ]
