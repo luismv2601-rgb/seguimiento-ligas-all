@@ -6,16 +6,29 @@ Sistema automatizado que monitorea ligas de fútbol y calcula, para cada una, un
 
 A diferencia de versiones anteriores del proyecto (umbral fijo en 5 para todas las ligas), acá el umbral se calcula por liga a partir de su propio histórico: **promedio + 1 desviación estándar** de las rachas observadas entre 2024 y 2025.
 
-Actualmente hay **6 ligas activas**, elegidas después de un rollout por etapas (1 → 3 → 6 ligas) para validar la calidad de los datos antes de escalar:
+Actualmente hay **17 ligas activas**, sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17) para validar la calidad de los datos antes de escalar:
 
-| Liga | País |
-|---|---|
-| Ekstraklasa | Polonia |
-| Primera División | Perú |
-| Serie A | Brasil |
-| Liga Profesional Argentina | Argentina |
-| Liga MX | México |
-| Primera A | Colombia |
+| `liga_id` | Liga | País | Región |
+|---|---|---|---|
+| 106 | Ekstraklasa | Polonia | Europa |
+| 116 | Premier League | Bielorrusia | Europa |
+| 342 | Premier League | Armenia | Europa |
+| 365 | Virsliga | Letonia | Europa |
+| 103 | Eliteserien | Noruega | Europa |
+| 113 | Allsvenskan | Suecia | Europa |
+| 283 | Liga I | Rumania | Europa |
+| 235 | Premier League | Rusia | Europa |
+| 207 | Super League | Suiza | Europa |
+| 119 | Superliga | Dinamarca | Europa |
+| 179 | Premiership | Escocia | Europa |
+| 218 | Bundesliga | Austria | Europa |
+| 281 | Primera División | Perú | Sudamérica |
+| 71 | Serie A | Brasil | Sudamérica |
+| 128 | Liga Profesional Argentina | Argentina | Sudamérica |
+| 239 | Primera A | Colombia | Sudamérica |
+| 262 | Liga MX | México | Centroamérica |
+
+Noruega y Suecia son ligas de calendario (marzo-noviembre); el resto sigue el ciclo europeo o sudamericano habitual.
 
 `ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 

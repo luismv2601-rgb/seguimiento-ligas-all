@@ -5,6 +5,8 @@
 - **Corrección:** `actualizar.py` creaba una alerta de Calendar por cada cruce de umbral al incorporar una temporada entera de golpe. Al sumar las 8 ligas con temporada en curso se generaron 11 eventos fechados hoy por cruces de marzo, abril y mayo. Ahora solo alerta si el partido que cruzó el umbral tiene 2 días o menos (`DIAS_MAX_PARA_ALERTAR`), y reporta cuántas omitió
 - `estado_ligas.py` + workflow `estado_ligas.yml`: muestra si la temporada de una liga ya arrancó, cuántas fechas lleva y cuándo es el próximo partido. Sirve para decidir el momento de sumar una liga
 - `Analisis 2` unificada en una sola tabla (antes eran dos), con `liga_id`, `pais` y `racha_maxima`
+- **Regla nueva:** la pestaña `Analisis` queda siempre ordenada de mayor a menor por `pct_secuenciales`. `cargar_historico.py` ordenaba solo el lote que agregaba y lo pegaba al final, así que sumar ligas rompía el orden global. Ahora `actualizar.py` la reordena en cada corrida horaria, sin reescribir valores y sin tocar nada si ya está ordenada
+- README: tabla de las 17 ligas activas con su `liga_id` y región
 
 ## v1.4.0 - 2026-08-01
 - **Corrección importante:** `cargar_historico.py` duplicaba todos los datos de las ligas ya cargadas. Procesaba todas las ligas activas y hacía `append` sin deduplicar, así que correrlo para sumar una liga nueva repetía el histórico completo de las anteriores en las 4 pestañas
