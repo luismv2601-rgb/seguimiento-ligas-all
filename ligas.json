@@ -15,5 +15,12 @@
   { "id": 207, "nombre": "Super League",                  "pais": "Suiza",          "region": "Europa",     "activa": true },
   { "id": 119, "nombre": "Superliga",                     "pais": "Dinamarca",      "region": "Europa",     "activa": true },
   { "id": 179, "nombre": "Premiership",                   "pais": "Escocia",        "region": "Europa",     "activa": true },
-  { "id": 218, "nombre": "Bundesliga",                    "pais": "Austria",        "region": "Europa",     "activa": true }
+  { "id": 218, "nombre": "Bundesliga",                    "pais": "Austria",        "region": "Europa",     "activa": true },
+  { "id": 265, "nombre": "Primera División",              "pais": "Chile",          "region": "Sudamérica", "activa": true },
+  { "id": 242, "nombre": "Liga Pro",                      "pais": "Ecuador",        "region": "Sudamérica", "activa": true },
+  { "id": 299, "nombre": "Primera División",              "pais": "Venezuela",      "region": "Sudamérica", "activa": true },
+  { "id": 162, "nombre": "Primera División",              "pais": "Costa Rica",     "region": "Centroamérica", "activa": true },
+  { "id": 253, "nombre": "Major League Soccer",           "pais": "Estados Unidos", "region": "Resto del mundo", "activa": true },
+  { "id": 292, "nombre": "K League 1",                    "pais": "Corea del Sur",  "region": "Resto del mundo", "activa": true },
+  { "id": 169, "nombre": "Super League",                  "pais": "China",          "region": "Resto del mundo", "activa": true }
 ]
