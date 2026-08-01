@@ -209,7 +209,7 @@ def main():
     ])
     asegurar_encabezados(ws_racha, [
         "liga_id", "liga", "pais", "racha_actual", "umbral_alerta", "racha_maxima", "alerta_activa",
-        "ultimo_partido", "fecha_ultimo_partido", "ultima_actualizacion",
+        "ultimo_partido", "fecha_ultimo_partido", "ultima_actualizacion", "region",
     ])
     asegurar_encabezados(ws_ranking, [
         "equipo", "liga_id", "liga", "pais", "total_partidos", "total_empates", "pct_empates",
@@ -259,7 +259,7 @@ def main():
         filas_racha_todas.append([
             liga["id"], liga["nombre"], liga["pais"], analisis["racha_actual"], analisis["umbral_alerta"],
             analisis["racha_maxima"], analisis["alerta_activa"], analisis["ultimo_partido"],
-            analisis["fecha_ultimo_partido"], hora_peru(),
+            analisis["fecha_ultimo_partido"], hora_peru(), liga.get("region", ""),
         ])
         filas_ranking_todas.extend(calcular_ranking_empates(filas_liga, liga))
 

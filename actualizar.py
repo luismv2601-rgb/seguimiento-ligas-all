@@ -158,6 +158,43 @@ def ordenar_analisis(ws_analisis):
     return True
 
 
+def asegurar_region(ws_racha):
+    """Mantiene la columna 'region' de Racha_Actual al dia con ligas.json.
+
+    La pestana no nacio con esta columna; la web la necesita para agrupar las
+    ligas por continente. Se resuelve aca, que corre cada hora, para que se ponga
+    al dia sola en vez de depender de una migracion manual.
+
+    Va al final de la fila y no en el medio a proposito: insertarla entre 'pais' y
+    'racha_actual' correria las columnas D:J que actualiza el batch de rachas.
+    """
+    valores = ws_racha.get_all_values()
+    if not valores:
+        return False
+
+    encabezado = list(valores[0])
+    if "region" not in encabezado:
+        ws_racha.update_cell(1, len(encabezado) + 1, "region")
+        encabezado.append("region")
+        print("  Columna 'region' agregada a Racha_Actual.")
+    col = encabezado.index("region") + 1
+
+    regiones = {str(liga["id"]): liga.get("region", "") for liga in LIGAS}
+    pendientes = []
+    for nro, fila in enumerate(valores[1:], start=2):
+        if not any(str(c).strip() for c in fila):
+            continue
+        esperada = regiones.get(str(fila[0]).strip(), "")
+        actual = fila[col - 1] if len(fila) >= col else ""
+        if esperada and actual != esperada:
+            pendientes.append({"range": rowcol_to_a1(nro, col), "values": [[esperada]]})
+
+    if pendientes:
+        ws_racha.batch_update(pendientes)
+        print(f"  Region actualizada en {len(pendientes)} filas de Racha_Actual.")
+    return bool(pendientes)
+
+
 def cargar_ids_procesados(ws_partidos):
     valores = ws_partidos.col_values(1)[1:]  # sin encabezado
     return set(valores)
@@ -288,6 +325,7 @@ def main():
             actualizaciones_racha.append({
                 "fila": info_racha["fila"],
                 "liga_id": liga["id"],
+                "region": liga.get("region", ""),
                 "liga": liga["nombre"],
                 "pais": liga["pais"],
                 "racha_actual": racha_actual,
@@ -321,7 +359,7 @@ def main():
         if act["fila"]:
             batch_racha.append({"range": f"D{act['fila']}:J{act['fila']}", "values": [valores]})
         else:
-            nuevas_filas_racha.append([act["liga_id"], act["liga"], act["pais"]] + valores)
+            nuevas_filas_racha.append([act["liga_id"], act["liga"], act["pais"]] + valores + [act["region"]])
 
     if batch_racha:
         ws_racha.batch_update(batch_racha)
@@ -354,6 +392,12 @@ def main():
     except Exception as e:
         print(f"  ERROR reordenando Analisis: {e}")
         errores.append(f"ordenar Analisis: {e}")
+
+    try:
+        asegurar_region(ws_racha)
+    except Exception as e:
+        print(f"  ERROR completando region: {e}")
+        errores.append(f"region en Racha_Actual: {e}")
 
     ws_estado.append_row(["ultima_ejecucion", hora_peru()])
     if errores:
