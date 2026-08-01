@@ -1,8 +1,10 @@
-"""Genera la pestana 'Analisis 2' del Sheet con dos tablas sobre rachas extremas.
+"""Genera la pestana 'Analisis 2' del Sheet: una tabla de rachas extremas.
 
-Tabla 1: por liga y temporada, cuantas rachas alcanzaron el doble del umbral,
-         y que porcentaje representan sobre los empates de esa temporada.
-Tabla 2: los largos concretos de esas rachas, por liga y temporada.
+Una fila por liga y una columna por temporada. Cada celda de temporada se lee:
+    rachas >= doble del umbral / total de empates de la temporada (%) -> largos concretos
+Ejemplo: "2 de 66 (3%) -> 13, 12".
+
+El criterio es >=, no exactamente el doble: con doble=12 se cuentan 12, 13, 14...
 
 Lee de las pestanas Partidos y Analisis; no las modifica. Reescribe 'Analisis 2'
 entera en cada corrida (es un reporte derivado, no una fuente de datos).
@@ -91,7 +93,6 @@ def main():
     temporadas = sorted({str(p.get("temporada", "")).strip() for p in partidos if str(p.get("temporada", "")).strip()})
 
     filas_t1 = []
-    filas_t2 = []
 
     for lid in sorted(por_liga, key=lambda x: umbrales.get(x, {}).get("liga", "")):
         info = umbrales.get(lid)
@@ -114,44 +115,31 @@ def main():
             if largo >= doble:
                 sup_por_temp[str(temp).strip()].append(largo)
 
-        fila1 = [lid, info["liga"], info["pais"], umbral, doble]
-        fila2 = [lid, info["liga"], info["pais"], doble]
+        fila = [lid, info["liga"], info["pais"], umbral, doble]
         for t in temporadas:
             sup = sorted(sup_por_temp.get(t, []), reverse=True)
             emp = empates_por_temp.get(t, 0)
             pct = round(100 * len(sup) / emp, 1) if emp else 0
-            fila1 += [len(sup), emp, pct]
-            fila2.append(", ".join(str(x) for x in sup) if sup else "-")
+            texto = f"{len(sup)} de {emp} ({pct}%)".replace(".", ",")
+            if sup:
+                texto += " -> " + ", ".join(str(x) for x in sup)
+            fila.append(texto)
 
         total_sup = sum(1 for largo, _ in rachas if largo >= doble)
-        fila1 += [total_sup, len(rachas)]
-        fila2.append(en_curso[0] if en_curso else 0)
-
-        filas_t1.append(fila1)
-        filas_t2.append(fila2)
+        fila += [en_curso[0] if en_curso else 0, total_sup, len(rachas)]
+        filas_t1.append(fila)
 
     enc1 = ["liga_id", "liga", "pais", "umbral", "doble_umbral"]
-    for t in temporadas:
-        enc1 += [f"{t}_rachas_>=doble", f"{t}_empates", f"{t}_pct_sobre_empates"]
-    enc1 += ["total_rachas_>=doble", "total_rachas"]
-
-    enc2 = ["liga_id", "liga", "pais", "doble_umbral"]
-    enc2 += [f"{t}_valores_>=doble" for t in temporadas]
-    enc2 += ["racha_en_curso"]
+    enc1 += list(temporadas)
+    enc1 += ["racha_en_curso", "total_>=doble", "total_rachas"]
 
     contenido = [
-        [f"TABLA 1 - Rachas MAYORES O IGUALES al doble del umbral (actualizado {hora_peru()})"],
-        ["Por temporada: cuantas rachas llegaron a >= doble del umbral, y que % representan sobre los empates de esa temporada. El criterio es >=, no exactamente el doble: con doble=12 se cuentan 12, 13, 14..."],
+        [f"Rachas MAYORES O IGUALES al doble del umbral (actualizado {hora_peru()})"],
+        ["Cada celda de temporada se lee: rachas >= doble / total de empates de esa temporada (porcentaje) -> los largos concretos."],
+        ["El criterio es >=, no exactamente el doble: con doble=12 se cuentan 12, 13, 14... 'racha_en_curso' es la racha viva hoy (0 si el ultimo partido fue empate)."],
         enc1,
     ]
     contenido += filas_t1
-    contenido += [
-        [],
-        ["TABLA 2 - Largos concretos de las rachas >= doble del umbral, por temporada"],
-        ["La ultima columna es la racha que sigue viva hoy (0 si el ultimo partido fue empate)"],
-        enc2,
-    ]
-    contenido += filas_t2
 
     try:
         ws = sheet.worksheet(PESTANA)
