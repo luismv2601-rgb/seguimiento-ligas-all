@@ -136,7 +136,6 @@ def main():
     contenido = [
         [f"Rachas MAYORES O IGUALES al doble del umbral (actualizado {hora_peru()})"],
         ["Cada celda de temporada se lee: rachas >= doble / total de empates de esa temporada (porcentaje) -> los largos concretos."],
-        ["El criterio es >=, no exactamente el doble: con doble=12 se cuentan 12, 13, 14... 'racha_en_curso' es la racha viva hoy (0 si el ultimo partido fue empate)."],
         enc1,
     ]
     contenido += filas_t1
