@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 import gspread
+from gspread.utils import rowcol_to_a1
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
@@ -117,6 +118,46 @@ def construir_fila(fx, liga, temporada, modalidad):
     }
 
 
+COLUMNA_ORDEN_ANALISIS = "pct_secuenciales"
+
+
+def ordenar_analisis(ws_analisis):
+    """Regla fija: la pestana Analisis va siempre de mayor a menor pct_secuenciales.
+
+    cargar_historico.py agrega las ligas nuevas al final, asi que el orden se rompe
+    cada vez que se suma una liga. Se reordena aca, que corre cada hora, para que la
+    regla se sostenga sola sin importar como hayan entrado los datos.
+
+    Ordena las filas en el lugar (no reescribe valores), asi no hay riesgo de que se
+    reinterpreten los decimales con coma del locale del Sheet.
+    """
+    valores = ws_analisis.get_all_values()
+    filas = [f for f in valores[1:] if any(str(c).strip() for c in f)] if valores else []
+    if len(filas) < 2:
+        return False
+
+    encabezado = valores[0]
+    if COLUMNA_ORDEN_ANALISIS not in encabezado:
+        print(f"  Aviso: Analisis no tiene columna {COLUMNA_ORDEN_ANALISIS}, no se reordena.")
+        return False
+    col = encabezado.index(COLUMNA_ORDEN_ANALISIS)
+
+    def pct(fila):
+        try:
+            return float(str(fila[col]).replace(",", ".") or 0)
+        except (ValueError, IndexError):
+            return 0.0
+
+    actuales = [pct(f) for f in filas]
+    if actuales == sorted(actuales, reverse=True):
+        return False  # ya esta ordenada, no se toca
+
+    ultima_col = rowcol_to_a1(1, len(encabezado)).rstrip("1")
+    ws_analisis.sort((col + 1, "des"), range=f"A2:{ultima_col}{len(filas) + 1}")
+    print(f"  Analisis reordenada por {COLUMNA_ORDEN_ANALISIS} (mayor a menor).")
+    return True
+
+
 def cargar_ids_procesados(ws_partidos):
     valores = ws_partidos.col_values(1)[1:]  # sin encabezado
     return set(valores)
@@ -169,6 +210,7 @@ def main():
     ws_racha = sheet.worksheet("Racha_Actual")
     ws_ranking = sheet.worksheet("Ranking_Empates")
     ws_estado = sheet.worksheet("Estado")
+    ws_analisis = sheet.worksheet("Analisis")
 
     ids_procesados = cargar_ids_procesados(ws_partidos)
     estado_racha = cargar_estado_racha(ws_racha)
@@ -305,6 +347,13 @@ def main():
         ws_ranking.batch_update(batch_ranking)
     if nuevas_filas_ranking:
         ws_ranking.append_rows(nuevas_filas_ranking)
+
+    # Se hace siempre, haya o no partidos nuevos: la regla de orden vale igual.
+    try:
+        ordenar_analisis(ws_analisis)
+    except Exception as e:
+        print(f"  ERROR reordenando Analisis: {e}")
+        errores.append(f"ordenar Analisis: {e}")
 
     ws_estado.append_row(["ultima_ejecucion", hora_peru()])
     if errores:
