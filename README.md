@@ -6,7 +6,7 @@ Sistema automatizado que monitorea ligas de fútbol y calcula, para cada una, un
 
 A diferencia de versiones anteriores del proyecto (umbral fijo en 5 para todas las ligas), acá el umbral se calcula por liga a partir de su propio histórico: **promedio + 1 desviación estándar** de las rachas observadas entre 2024 y 2025.
 
-Actualmente hay **17 ligas activas**, sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17) para validar la calidad de los datos antes de escalar:
+Actualmente hay **24 ligas activas**, sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24) para validar la calidad de los datos antes de escalar:
 
 | `liga_id` | Liga | País | Región |
 |---|---|---|---|
@@ -26,9 +26,18 @@ Actualmente hay **17 ligas activas**, sumadas en un rollout por etapas (1 → 3 
 | 71 | Serie A | Brasil | Sudamérica |
 | 128 | Liga Profesional Argentina | Argentina | Sudamérica |
 | 239 | Primera A | Colombia | Sudamérica |
-| 262 | Liga MX | México | Centroamérica |
+| 265 | Primera División | Chile | Sudamérica |
+| 242 | Liga Pro | Ecuador | Sudamérica |
+| 299 | Primera División | Venezuela | Sudamérica |
+| 262 | Liga MX | México | Norteamérica |
+| 162 | Primera División | Costa Rica | Norteamérica |
+| 253 | Major League Soccer | Estados Unidos | Norteamérica |
+| 292 | K League 1 | Corea del Sur | Asia |
+| 169 | Super League | China | Asia |
 
-Noruega y Suecia son ligas de calendario (marzo-noviembre); el resto sigue el ciclo europeo o sudamericano habitual.
+La `region` no es decorativa: la web agrupa la lista por continente y la lee de la columna homónima de `Racha_Actual`, que `actualizar.py` mantiene sincronizada con este archivo.
+
+Noruega, Suecia, Chile, Ecuador, Venezuela, MLS, Corea y China son ligas de calendario (la temporada coincide con el año); el resto cruza de un año al siguiente.
 
 `ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 
@@ -51,31 +60,39 @@ API-Football (api-sports.io)
 
                             │
                             ▼
-                     Google Sheets (5 pestañas)
-                     ├── Partidos       (histórico completo, partido por partido)
+                     Google Sheets (7 pestañas)
+                     ├── Partidos       (histórico completo, solo partidos jugados)
                      ├── Analisis       (umbral estadístico fijo por liga, calculado 2024-2025)
                      ├── Racha_Actual   (racha vigente y récord, se actualiza en vivo)
                      ├── Ranking_Empates (equipos ordenados por % de empates)
-                     └── Estado        (bitácora: última ejecución, errores)
+                     ├── Estado         (bitácora: última ejecución, errores)
+                     ├── Analisis 2     (rachas extremas por temporada — analisis_extremos.py)
+                     └── Proximos       (partidos programados — proximos.py, diario)
 
                             │
                             ▼
                      Google Calendar (alerta cuando una racha nueva cruza el umbral)
 ```
 
-### Las 5 pestañas del Sheet
+### Las 7 pestañas del Sheet
 
 **Partidos** — un partido por fila: `fixture_id, liga_id, liga, pais, temporada, fecha, hora_peru, equipo_local, equipo_visitante, goles_local, goles_visitante, es_empate, modalidad`
 
 **Analisis** — el baseline fijo por liga (calculado una sola vez con 2024-2025, no se recalcula automáticamente): `liga_id, pais, liga, temporadas_analizadas, total_partidos, total_empates, promedio_racha, desviacion_std, umbral_alerta, racha_maxima, partidos_secuenciales, pct_secuenciales`. Ordenado por `pct_secuenciales` descendente.
 
-**Racha_Actual** — el estado vivo de cada liga: `liga_id, liga, pais, racha_actual, umbral_alerta, racha_maxima, alerta_activa, ultimo_partido, fecha_ultimo_partido, ultima_actualizacion`. `racha_maxima` sí se actualiza en vivo (como "récord corriendo") si la racha actual supera el máximo histórico.
+**Racha_Actual** — el estado vivo de cada liga: `liga_id, liga, pais, racha_actual, umbral_alerta, racha_maxima, alerta_activa, ultimo_partido, fecha_ultimo_partido, ultima_actualizacion, region`. `racha_maxima` sí se actualiza en vivo (como "récord corriendo") si la racha actual supera el máximo histórico.
+
+> `region` va **al final** y no en el medio a propósito: `actualizar.py` escribe las rachas por rango `D:J`, así que insertar una columna antes correría todo. La mantiene sincronizada con `ligas.json` la función `asegurar_region()`, en cada corrida horaria.
 
 **Ranking_Empates** — un equipo por fila: `equipo, liga_id, liga, pais, total_partidos, total_empates, pct_empates`. Ordenado por `pct_empates` descendente (nota: equipos con pocos partidos jugados pueden aparecer arriba por variación estadística de muestra chica).
 
 **Estado** — bitácora simple (`clave, valor`) con la fecha de la última carga/ejecución y errores si los hay.
 
-**Analisis 2** — reporte derivado, una fila por liga: cuántas rachas alcanzaron el **doble** del umbral por temporada, qué porcentaje representan sobre los empates de esa temporada, y los largos concretos. Se regenera entera con `analisis_extremos.yml` (manual); no la consume nada más.
+**Analisis 2** — reporte derivado, una fila por liga: cuántas rachas alcanzaron el **doble** del umbral por temporada, qué porcentaje representan sobre los empates de esa temporada, y los largos concretos. Se regenera entera con `analisis_extremos.yml` (manual).
+
+**Proximos** — partidos programados de los próximos 14 días: `fixture_id, liga_id, liga, pais, temporada, fecha, hora_peru, equipo_local, equipo_visitante, ronda, dias_para`. Solo estado `NS`, o sea con hora confirmada; los `TBD` quedan afuera. Se reescribe entera una vez por día con `proximos.yml`.
+
+> **Por qué los programados no van en `Partidos`.** Un partido sin jugar trae los goles en `None`, y en Python `None == None` es `True`, así que `es_empate` daría `"SI"` y cada partido futuro cortaría todas las rachas. Además `actualizar.py` deduplica por `fixture_id`: una vez cargado, nunca se le escribiría el resultado real al jugarse. `Partidos` es *append-only* con deduplicación; los programados necesitan una tabla que se reescriba.
 
 ### Alertas de Calendar: solo si el cruce es reciente
 
@@ -114,8 +131,14 @@ Cuenta de servicio con las siguientes APIs habilitadas: **Google Sheets API**, *
 
 ### Workflows de GitHub Actions
 
-- **`cargar_historico.yml`** — manual (`workflow_dispatch`). Correrlo solo cuando se necesite una carga histórica completa (ej. al agregar una liga nueva, o para hacer un re-baseline).
-- **`actualizar.yml`** — el que mantiene el sistema al día. Tiene dos disparadores (ver abajo), más disparo manual disponible.
+| Workflow | Disparo | Para qué |
+|---|---|---|
+| `actualizar.yml` | cada hora (ver abajo) | Mantiene el sistema al día: partidos nuevos, rachas y alertas |
+| `proximos.yml` | diario, 05:00 hora Perú | Regenera la pestaña `Proximos` |
+| `cargar_historico.yml` | manual | Carga el baseline 2024-2025 de las ligas que no lo tengan |
+| `analisis_extremos.yml` | manual | Regenera la pestaña `Analisis 2` |
+| `buscar_ligas.yml` | manual | Busca el `liga_id` de un país antes de agregarlo |
+| `estado_ligas.yml` | manual | Dice si la temporada de una liga ya arrancó y cuándo juega |
 
 ### Quién dispara `actualizar.yml`
 

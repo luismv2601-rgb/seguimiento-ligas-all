@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.0 - 2026-08-01
+- 7 ligas más: Chile (265), Ecuador (242) y Venezuela (299) de Sudamérica, Costa Rica (162) y MLS (253) de Norteamérica, y Corea del Sur (292) y China (169) de Asia. De 17 a **24 ligas activas**. Entraron 3.958 partidos de baseline y 969 de la temporada en curso, sin un solo duplicado
+- **Primera prueba real del filtro de alertas:** esos 969 partidos produjeron 45 cruces de umbral, todos de meses atrás, y **no se creó ninguna alerta**. Con el código de la mañana habrían sido 45 eventos basura en el Calendar
+- `proximos.py` + workflow `proximos.yml`: pestaña `Proximos` con los partidos programados de los próximos 14 días, solo los que tienen hora confirmada (estado `NS`). Corre una vez por día. Va aparte de `Partidos` porque un partido sin jugar trae los goles en `None` y `None == None` da `True`: se leería como empate y cortaría todas las rachas
+- `ligas.json` pasa a continentes reales: México y Costa Rica de Centroamérica a Norteamérica, Estados Unidos de "Resto del mundo" a Norteamérica, y Corea y China a Asia
+- Columna `region` en `Racha_Actual`, que la web necesita para agrupar por continente. Va al final de la fila porque `actualizar.py` escribe las rachas por rango `D:J`. `asegurar_region()` la crea y la mantiene sincronizada con `ligas.json` en cada corrida horaria, sin migración manual
+- `estado_ligas.py` + workflow: dice si la temporada de una liga ya arrancó, cuántas fechas lleva y cuándo es el próximo partido
+
 ## v1.5.0 - 2026-08-01
 - 11 ligas europeas nuevas: Bielorrusia (116), Armenia (342), Letonia (365), Noruega (103), Suecia (113), Rumania (283), Rusia (235), Suiza (207), Dinamarca (119), Escocia (179) y Austria (218). De 6 a 17 ligas activas
 - **Corrección:** `actualizar.py` creaba una alerta de Calendar por cada cruce de umbral al incorporar una temporada entera de golpe. Al sumar las 8 ligas con temporada en curso se generaron 11 eventos fechados hoy por cruces de marzo, abril y mayo. Ahora solo alerta si el partido que cruzó el umbral tiene 2 días o menos (`DIAS_MAX_PARA_ALERTAR`), y reporta cuántas omitió
