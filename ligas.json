@@ -29,5 +29,17 @@
   { "id": 339, "nombre": "Liga Nacional",                 "pais": "Guatemala",      "region": "Norte y Centroamérica", "activa": true },
   { "id": 370, "nombre": "Primera División",              "pais": "El Salvador",    "region": "Norte y Centroamérica", "activa": true },
   { "id": 234, "nombre": "Liga Nacional",                 "pais": "Honduras",       "region": "Norte y Centroamérica", "activa": true },
-  { "id": 396, "nombre": "Primera División",              "pais": "Nicaragua",      "region": "Norte y Centroamérica", "activa": true }
+  { "id": 396, "nombre": "Primera División",              "pais": "Nicaragua",      "region": "Norte y Centroamérica", "activa": true },
+  { "id": 333, "nombre": "Premier League",                "pais": "Ucrania",        "region": "Europa",     "activa": true },
+  { "id": 210, "nombre": "HNL",                           "pais": "Croacia",        "region": "Europa",     "activa": true },
+  { "id": 286, "nombre": "Super Liga",                    "pais": "Serbia",         "region": "Europa",     "activa": true },
+  { "id": 345, "nombre": "Czech Liga",                    "pais": "Chequia",        "region": "Europa",     "activa": true },
+  { "id": 332, "nombre": "Super Liga",                    "pais": "Eslovaquia",     "region": "Europa",     "activa": true },
+  { "id": 271, "nombre": "NB I",                          "pais": "Hungría",        "region": "Europa",     "activa": true },
+  { "id": 172, "nombre": "First League",                  "pais": "Bulgaria",       "region": "Europa",     "activa": true },
+  { "id": 373, "nombre": "1. SNL",                        "pais": "Eslovenia",      "region": "Europa",     "activa": true },
+  { "id": 371, "nombre": "First League",                  "pais": "Macedonia",      "region": "Europa",     "activa": true },
+  { "id": 355, "nombre": "First League",                  "pais": "Montenegro",     "region": "Europa",     "activa": true },
+  { "id": 261, "nombre": "National Division",             "pais": "Luxemburgo",     "region": "Europa",     "activa": true },
+  { "id": 110, "nombre": "Premier League",                "pais": "Gales",          "region": "Europa",     "activa": true }
 ]
