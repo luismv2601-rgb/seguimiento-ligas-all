@@ -3,7 +3,7 @@
   { "id": 281, "nombre": "Primera División",              "pais": "Perú",           "region": "Sudamérica", "activa": true },
   { "id": 71,  "nombre": "Serie A",                       "pais": "Brasil",         "region": "Sudamérica", "activa": true },
   { "id": 128, "nombre": "Liga Profesional Argentina",    "pais": "Argentina",      "region": "Sudamérica", "activa": true },
-  { "id": 262, "nombre": "Liga MX",                       "pais": "México",         "region": "Norteamérica", "activa": true },
+  { "id": 262, "nombre": "Liga MX",                       "pais": "México",         "region": "Norte y Centroamérica", "activa": true },
   { "id": 239, "nombre": "Primera A",                     "pais": "Colombia",       "region": "Sudamérica", "activa": true },
   { "id": 116, "nombre": "Premier League",                "pais": "Bielorrusia",    "region": "Europa",     "activa": true },
   { "id": 342, "nombre": "Premier League",                "pais": "Armenia",        "region": "Europa",     "activa": true },
@@ -19,8 +19,15 @@
   { "id": 265, "nombre": "Primera División",              "pais": "Chile",          "region": "Sudamérica", "activa": true },
   { "id": 242, "nombre": "Liga Pro",                      "pais": "Ecuador",        "region": "Sudamérica", "activa": true },
   { "id": 299, "nombre": "Primera División",              "pais": "Venezuela",      "region": "Sudamérica", "activa": true },
-  { "id": 162, "nombre": "Primera División",              "pais": "Costa Rica",     "region": "Norteamérica", "activa": true },
-  { "id": 253, "nombre": "Major League Soccer",           "pais": "Estados Unidos", "region": "Norteamérica", "activa": true },
+  { "id": 162, "nombre": "Primera División",              "pais": "Costa Rica",     "region": "Norte y Centroamérica", "activa": true },
+  { "id": 253, "nombre": "Major League Soccer",           "pais": "Estados Unidos", "region": "Norte y Centroamérica", "activa": true },
   { "id": 292, "nombre": "K League 1",                    "pais": "Corea del Sur",  "region": "Asia",       "activa": true },
-  { "id": 169, "nombre": "Super League",                  "pais": "China",          "region": "Asia",       "activa": true }
+  { "id": 169, "nombre": "Super League",                  "pais": "China",          "region": "Asia",       "activa": true },
+  { "id": 344, "nombre": "Primera División",              "pais": "Bolivia",        "region": "Sudamérica", "activa": true },
+  { "id": 479, "nombre": "Canadian Premier League",       "pais": "Canadá",         "region": "Norte y Centroamérica", "activa": true },
+  { "id": 304, "nombre": "Liga Panameña de Fútbol",       "pais": "Panamá",         "region": "Norte y Centroamérica", "activa": true },
+  { "id": 339, "nombre": "Liga Nacional",                 "pais": "Guatemala",      "region": "Norte y Centroamérica", "activa": true },
+  { "id": 370, "nombre": "Primera División",              "pais": "El Salvador",    "region": "Norte y Centroamérica", "activa": true },
+  { "id": 234, "nombre": "Liga Nacional",                 "pais": "Honduras",       "region": "Norte y Centroamérica", "activa": true },
+  { "id": 396, "nombre": "Primera División",              "pais": "Nicaragua",      "region": "Norte y Centroamérica", "activa": true }
 ]
