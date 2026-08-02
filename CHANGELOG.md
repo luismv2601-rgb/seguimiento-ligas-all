@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.7.0 - 2026-08-02
+- **De 24 a 43 ligas activas.** Primero 7: Bolivia (344), Canadá (479), Panamá (304), Guatemala (339), El Salvador (370), Honduras (234) y Nicaragua (396). Después 12 europeas que arrancaron entre el 18 de julio y el 2 de agosto: Ucrania (333), Croacia (210), Serbia (286), Chequia (345), Eslovaquia (332), Hungría (271), Bulgaria (172), Eslovenia (373), Macedonia (371), Montenegro (355), Luxemburgo (261) y Gales (110)
+- Bolivia cierra el hueco de Sudamérica: era la única de las 10 de CONMEBOL que nunca había estado en el catálogo. Se revisaron además 32 países europeos que el catálogo original no cubría
+- La región `Norteamérica` pasa a `Norte y Centroamérica`, para no multiplicar los grupos de la app al sumar las centroamericanas
+- **Regla nueva:** `Ranking_Empates` también queda siempre ordenada, por `pct_empates`. Tenía el mismo problema que `Analisis`: tras sumar 7 ligas la pestaña acumulaba 237 saltos de orden y los 111 equipos nuevos quedaban al fondo, lo que la hacía parecer desactualizada aunque los datos estuvieran completos. `ordenar_analisis()` pasa a ser `ordenar_por_columna()` y las hojas se declaran en `ORDEN_PESTANAS`
+- El filtro de alertas quedó probado en producción tres veces. En las cargas masivas suprimió 45 y 10 cruces históricos sin crear un solo evento; al sumar las europeas dejó pasar una alerta real de Gales (racha 3 → 9 con partidos del día) y suprimió una de Bulgaria del 27 de julio, distinguiendo lo viejo de lo nuevo dentro de la misma corrida
+
 ## v1.6.0 - 2026-08-01
 - 7 ligas más: Chile (265), Ecuador (242) y Venezuela (299) de Sudamérica, Costa Rica (162) y MLS (253) de Norteamérica, y Corea del Sur (292) y China (169) de Asia. De 17 a **24 ligas activas**. Entraron 3.958 partidos de baseline y 969 de la temporada en curso, sin un solo duplicado
 - **Primera prueba real del filtro de alertas:** esos 969 partidos produjeron 45 cruces de umbral, todos de meses atrás, y **no se creó ninguna alerta**. Con el código de la mañana habrían sido 45 eventos basura en el Calendar

@@ -6,38 +6,59 @@ Sistema automatizado que monitorea ligas de fútbol y calcula, para cada una, un
 
 A diferencia de versiones anteriores del proyecto (umbral fijo en 5 para todas las ligas), acá el umbral se calcula por liga a partir de su propio histórico: **promedio + 1 desviación estándar** de las rachas observadas entre 2024 y 2025.
 
-Actualmente hay **24 ligas activas**, sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24) para validar la calidad de los datos antes de escalar:
+Actualmente hay **43 ligas activas** — 24 europeas, 9 de Norte y Centroamérica, 8 sudamericanas y 2 asiáticas — sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24 → 31 → 43) para validar la calidad de los datos antes de escalar:
 
 | `liga_id` | Liga | País | Región |
 |---|---|---|---|
-| 106 | Ekstraklasa | Polonia | Europa |
-| 116 | Premier League | Bielorrusia | Europa |
 | 342 | Premier League | Armenia | Europa |
-| 365 | Virsliga | Letonia | Europa |
-| 103 | Eliteserien | Noruega | Europa |
-| 113 | Allsvenskan | Suecia | Europa |
-| 283 | Liga I | Rumania | Europa |
-| 235 | Premier League | Rusia | Europa |
-| 207 | Super League | Suiza | Europa |
+| 218 | Bundesliga | Austria | Europa |
+| 116 | Premier League | Bielorrusia | Europa |
+| 172 | First League | Bulgaria | Europa |
+| 345 | Czech Liga | Chequia | Europa |
+| 210 | HNL | Croacia | Europa |
 | 119 | Superliga | Dinamarca | Europa |
 | 179 | Premiership | Escocia | Europa |
-| 218 | Bundesliga | Austria | Europa |
-| 281 | Primera División | Perú | Sudamérica |
-| 71 | Serie A | Brasil | Sudamérica |
+| 332 | Super Liga | Eslovaquia | Europa |
+| 373 | 1. SNL | Eslovenia | Europa |
+| 110 | Premier League | Gales | Europa |
+| 271 | NB I | Hungría | Europa |
+| 365 | Virsliga | Letonia | Europa |
+| 261 | National Division | Luxemburgo | Europa |
+| 371 | First League | Macedonia | Europa |
+| 355 | First League | Montenegro | Europa |
+| 103 | Eliteserien | Noruega | Europa |
+| 106 | Ekstraklasa | Polonia | Europa |
+| 283 | Liga I | Rumania | Europa |
+| 235 | Premier League | Rusia | Europa |
+| 286 | Super Liga | Serbia | Europa |
+| 113 | Allsvenskan | Suecia | Europa |
+| 207 | Super League | Suiza | Europa |
+| 333 | Premier League | Ucrania | Europa |
+| 479 | Canadian Premier League | Canadá | Norte y Centroamérica |
+| 162 | Primera División | Costa Rica | Norte y Centroamérica |
+| 370 | Primera División | El Salvador | Norte y Centroamérica |
+| 253 | Major League Soccer | Estados Unidos | Norte y Centroamérica |
+| 339 | Liga Nacional | Guatemala | Norte y Centroamérica |
+| 234 | Liga Nacional | Honduras | Norte y Centroamérica |
+| 262 | Liga MX | México | Norte y Centroamérica |
+| 396 | Primera División | Nicaragua | Norte y Centroamérica |
+| 304 | Liga Panameña de Fútbol | Panamá | Norte y Centroamérica |
 | 128 | Liga Profesional Argentina | Argentina | Sudamérica |
-| 239 | Primera A | Colombia | Sudamérica |
+| 344 | Primera División | Bolivia | Sudamérica |
+| 71 | Serie A | Brasil | Sudamérica |
 | 265 | Primera División | Chile | Sudamérica |
+| 239 | Primera A | Colombia | Sudamérica |
 | 242 | Liga Pro | Ecuador | Sudamérica |
+| 281 | Primera División | Perú | Sudamérica |
 | 299 | Primera División | Venezuela | Sudamérica |
-| 262 | Liga MX | México | Norteamérica |
-| 162 | Primera División | Costa Rica | Norteamérica |
-| 253 | Major League Soccer | Estados Unidos | Norteamérica |
-| 292 | K League 1 | Corea del Sur | Asia |
 | 169 | Super League | China | Asia |
+| 292 | K League 1 | Corea del Sur | Asia |
 
 La `region` no es decorativa: la web agrupa la lista por continente y la lee de la columna homónima de `Racha_Actual`, que `actualizar.py` mantiene sincronizada con este archivo.
 
-Noruega, Suecia, Chile, Ecuador, Venezuela, MLS, Corea y China son ligas de calendario (la temporada coincide con el año); el resto cruza de un año al siguiente.
+Varias son ligas de calendario, con la temporada dentro del mismo año: Noruega, Suecia, Chile, Ecuador, Venezuela, Bolivia, Panamá, MLS, Canadá, Corea y China. El resto cruza de un año al siguiente.
+
+**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 86 con las 43 activas. Entre Cloud Scheduler (24 al día) y el cron de GitHub (~8) son unas **2.800 llamadas diarias**, más 86 de `proximos.py`. Antes de sumar muchas ligas más conviene mirar el límite del plan en el dashboard de api-sports.io.
 
 `ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 
@@ -85,6 +106,12 @@ API-Football (api-sports.io)
 > `region` va **al final** y no en el medio a propósito: `actualizar.py` escribe las rachas por rango `D:J`, así que insertar una columna antes correría todo. La mantiene sincronizada con `ligas.json` la función `asegurar_region()`, en cada corrida horaria.
 
 **Ranking_Empates** — un equipo por fila: `equipo, liga_id, liga, pais, total_partidos, total_empates, pct_empates`. Ordenado por `pct_empates` descendente (nota: equipos con pocos partidos jugados pueden aparecer arriba por variación estadística de muestra chica).
+
+### Regla de orden: `Analisis` y `Ranking_Empates`
+
+Las dos deben quedar siempre ordenadas de mayor a menor por su columna de porcentaje. `cargar_historico.py` ordena solo el lote que está agregando y lo pega al final, así que sumar una liga rompe el orden global — pasó en las dos.
+
+`actualizar.py` las reordena en cada corrida horaria con `ordenar_por_columna()`. Las pestañas a ordenar están declaradas en `ORDEN_PESTANAS`; agregar otra es una línea. Ordena el rango en el lugar, sin reescribir valores, para que los decimales con coma del locale no se reinterpreten, y no toca nada si ya está ordenada.
 
 **Estado** — bitácora simple (`clave, valor`) con la fecha de la última carga/ejecución y errores si los hay.
 
