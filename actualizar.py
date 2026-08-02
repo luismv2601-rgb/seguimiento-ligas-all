@@ -118,29 +118,34 @@ def construir_fila(fx, liga, temporada, modalidad):
     }
 
 
-COLUMNA_ORDEN_ANALISIS = "pct_secuenciales"
+# Pestanas que deben quedar ordenadas de mayor a menor por una columna.
+ORDEN_PESTANAS = [
+    ("Analisis", "pct_secuenciales"),
+    ("Ranking_Empates", "pct_empates"),
+]
 
 
-def ordenar_analisis(ws_analisis):
-    """Regla fija: la pestana Analisis va siempre de mayor a menor pct_secuenciales.
+def ordenar_por_columna(ws, nombre_hoja, columna):
+    """Deja la pestana ordenada de mayor a menor por esa columna.
 
-    cargar_historico.py agrega las ligas nuevas al final, asi que el orden se rompe
-    cada vez que se suma una liga. Se reordena aca, que corre cada hora, para que la
-    regla se sostenga sola sin importar como hayan entrado los datos.
+    Vale para Analisis (pct_secuenciales) y Ranking_Empates (pct_empates): en las dos,
+    cargar_historico.py ordena solo el lote que agrega y lo pega al final, asi que el
+    orden global se rompe cada vez que se suma una liga. Se reordena aca, que corre
+    cada hora, para que la regla se sostenga sola.
 
     Ordena las filas en el lugar (no reescribe valores), asi no hay riesgo de que se
     reinterpreten los decimales con coma del locale del Sheet.
     """
-    valores = ws_analisis.get_all_values()
+    valores = ws.get_all_values()
     filas = [f for f in valores[1:] if any(str(c).strip() for c in f)] if valores else []
     if len(filas) < 2:
         return False
 
     encabezado = valores[0]
-    if COLUMNA_ORDEN_ANALISIS not in encabezado:
-        print(f"  Aviso: Analisis no tiene columna {COLUMNA_ORDEN_ANALISIS}, no se reordena.")
+    if columna not in encabezado:
+        print(f"  Aviso: {nombre_hoja} no tiene columna {columna}, no se reordena.")
         return False
-    col = encabezado.index(COLUMNA_ORDEN_ANALISIS)
+    col = encabezado.index(columna)
 
     def pct(fila):
         try:
@@ -153,8 +158,8 @@ def ordenar_analisis(ws_analisis):
         return False  # ya esta ordenada, no se toca
 
     ultima_col = rowcol_to_a1(1, len(encabezado)).rstrip("1")
-    ws_analisis.sort((col + 1, "des"), range=f"A2:{ultima_col}{len(filas) + 1}")
-    print(f"  Analisis reordenada por {COLUMNA_ORDEN_ANALISIS} (mayor a menor).")
+    ws.sort((col + 1, "des"), range=f"A2:{ultima_col}{len(filas) + 1}")
+    print(f"  {nombre_hoja} reordenada por {columna} (mayor a menor).")
     return True
 
 
@@ -387,11 +392,13 @@ def main():
         ws_ranking.append_rows(nuevas_filas_ranking)
 
     # Se hace siempre, haya o no partidos nuevos: la regla de orden vale igual.
-    try:
-        ordenar_analisis(ws_analisis)
-    except Exception as e:
-        print(f"  ERROR reordenando Analisis: {e}")
-        errores.append(f"ordenar Analisis: {e}")
+    hojas_ordenables = {"Analisis": ws_analisis, "Ranking_Empates": ws_ranking}
+    for nombre_hoja, columna in ORDEN_PESTANAS:
+        try:
+            ordenar_por_columna(hojas_ordenables[nombre_hoja], nombre_hoja, columna)
+        except Exception as e:
+            print(f"  ERROR reordenando {nombre_hoja}: {e}")
+            errores.append(f"ordenar {nombre_hoja}: {e}")
 
     try:
         asegurar_region(ws_racha)
