@@ -2,9 +2,14 @@ name: Proximos Partidos
 
 on:
   schedule:
-    # Una vez por dia alcanza: la programacion no cambia seguido.
-    # 10:00 UTC = 05:00 hora Peru.
-    - cron: '0 10 * * *'
+    # Dos veces por dia, no una. El cron de GitHub es best-effort: descarta ~1 de
+    # cada 3 disparos y se atrasa hasta 3 horas (medido: se declaro 10:00 UTC y
+    # corrio 11:18, 12:01, 12:03 y 12:56). Con un solo disparo, un salto dejaba la
+    # pestana 48 horas vieja; con dos, un salto se cubre solo.
+    # 09:00 UTC = 04:00 hora Peru (antes del primer partido del dia).
+    # 21:00 UTC = 16:00 hora Peru (agarra las reprogramaciones de la tarde).
+    - cron: '0 9 * * *'
+    - cron: '0 21 * * *'
   workflow_dispatch:
 
 jobs:

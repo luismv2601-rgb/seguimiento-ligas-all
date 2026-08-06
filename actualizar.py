@@ -163,6 +163,60 @@ def ordenar_por_columna(ws, nombre_hoja, columna):
     return True
 
 
+PESTANA_PROXIMOS = "Proximos"
+
+
+def purgar_proximos(sheet, fixture_ids):
+    """Saca de 'Proximos' los partidos que esta corrida acaba de cargar como jugados.
+
+    'Proximos' la reescribe entera proximos.py, que corre una vez por dia, pero
+    'Partidos' se actualiza cada hora. Entre una corrida y la otra un partido ya
+    jugado seguia figurando como programado hasta 17 horas. Se borra la fila en la
+    misma corrida que carga el resultado, y no cuesta ni una llamada a API-Football:
+    los fixture_id ya los trajo el pedido de partidos jugados.
+
+    No hace falta que sea perfecto ni que cubra bajas o reprogramaciones: la corrida
+    diaria de proximos.py reescribe la pestana entera y corrige cualquier resto.
+    """
+    if not fixture_ids:
+        return 0
+    try:
+        ws = sheet.worksheet(PESTANA_PROXIMOS)
+    except gspread.WorksheetNotFound:
+        return 0
+
+    valores = ws.get_all_values()
+    if len(valores) < 3:  # fila de titulo + encabezados, sin datos
+        return 0
+
+    # Indices base 0. Los datos arrancan en la fila 3 de la hoja (indice 2).
+    a_borrar = [
+        i for i, fila in enumerate(valores)
+        if i >= 2 and fila and str(fila[0]).strip() in fixture_ids
+    ]
+    if not a_borrar:
+        return 0
+
+    # Se agrupan en bloques contiguos y se borran de abajo hacia arriba: si se
+    # borrara de arriba hacia abajo, cada borrado correria los indices de los que faltan.
+    bloques = []
+    for i in a_borrar:
+        if bloques and i == bloques[-1][1] + 1:
+            bloques[-1][1] = i
+        else:
+            bloques.append([i, i])
+
+    sheet.batch_update({"requests": [
+        {"deleteDimension": {"range": {
+            "sheetId": ws.id, "dimension": "ROWS",
+            "startIndex": ini, "endIndex": fin + 1,
+        }}}
+        for ini, fin in reversed(bloques)
+    ]})
+    print(f"  {len(a_borrar)} partidos ya jugados sacados de {PESTANA_PROXIMOS}.")
+    return len(a_borrar)
+
+
 def asegurar_region(ws_racha):
     """Mantiene la columna 'region' de Racha_Actual al dia con ligas.json.
 
@@ -355,6 +409,14 @@ def main():
             f["es_empate"], f["modalidad"],
         ] for f in filas_partidos_nuevas])
 
+    # ---- Sacar de Proximos lo que se acaba de cargar como jugado ----
+    proximos_purgados = 0
+    try:
+        proximos_purgados = purgar_proximos(sheet, {f["fixture_id"] for f in filas_partidos_nuevas})
+    except Exception as e:
+        print(f"  ERROR purgando {PESTANA_PROXIMOS}: {e}")
+        errores.append(f"purgar {PESTANA_PROXIMOS}: {e}")
+
     # ---- Actualizar Racha_Actual en un solo batch_update ----
     batch_racha = []
     nuevas_filas_racha = []
@@ -413,6 +475,8 @@ def main():
     print("\n===== RESUMEN =====")
     print(f"Partidos nuevos: {len(filas_partidos_nuevas)}")
     print(f"Ligas con actividad: {len(actualizaciones_racha)}")
+    if proximos_purgados:
+        print(f"Sacados de {PESTANA_PROXIMOS} por ya jugados: {proximos_purgados}")
     if alertas_omitidas:
         print(f"Alertas omitidas por ser cruces viejos: {alertas_omitidas}")
     if errores:
