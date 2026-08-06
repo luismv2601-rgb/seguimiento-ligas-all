@@ -6,7 +6,7 @@ Sistema automatizado que monitorea ligas de fútbol y calcula, para cada una, un
 
 A diferencia de versiones anteriores del proyecto (umbral fijo en 5 para todas las ligas), acá el umbral se calcula por liga a partir de su propio histórico: **promedio + 1 desviación estándar** de las rachas observadas entre 2024 y 2025.
 
-Actualmente hay **43 ligas activas** — 24 europeas, 9 de Norte y Centroamérica, 8 sudamericanas y 2 asiáticas — sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24 → 31 → 43) para validar la calidad de los datos antes de escalar:
+Actualmente hay **46 ligas activas** — 27 europeas, 9 de Norte y Centroamérica, 8 sudamericanas y 2 asiáticas — sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24 → 31 → 43 → 46) para validar la calidad de los datos antes de escalar:
 
 | `liga_id` | Liga | País | Región |
 |---|---|---|---|
@@ -20,8 +20,11 @@ Actualmente hay **43 ligas activas** — 24 europeas, 9 de Norte y Centroaméric
 | 179 | Premiership | Escocia | Europa |
 | 332 | Super Liga | Eslovaquia | Europa |
 | 373 | 1. SNL | Eslovenia | Europa |
+| 329 | Meistriliiga | Estonia | Europa |
+| 327 | Erovnuli Liga | Georgia | Europa |
 | 110 | Premier League | Gales | Europa |
 | 271 | NB I | Hungría | Europa |
+| 389 | Premier League | Kazajistán | Europa |
 | 365 | Virsliga | Letonia | Europa |
 | 261 | National Division | Luxemburgo | Europa |
 | 371 | First League | Macedonia | Europa |
@@ -58,7 +61,7 @@ La `region` no es decorativa: la web agrupa la lista por continente y la lee de 
 
 Varias son ligas de calendario, con la temporada dentro del mismo año: Noruega, Suecia, Chile, Ecuador, Venezuela, Bolivia, Panamá, MLS, Canadá, Corea y China. El resto cruza de un año al siguiente.
 
-**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 86 con las 43 activas. Entre Cloud Scheduler (15 al día, ventana 09:00–23:00 hora Perú) y el cron de GitHub (~5) son unas **1.720 llamadas diarias**, más 172 de `proximos.py`. Antes de sumar muchas ligas más conviene mirar el límite del plan en el dashboard de api-sports.io: cada liga nueva suma ~40 llamadas diarias.
+**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 92 con las 46 activas. Entre Cloud Scheduler (15 al día, ventana 09:00–23:00 hora Perú) y el cron de GitHub (~5) son unas **1.840 llamadas diarias**, más 184 de `proximos.py`. Antes de sumar muchas ligas más conviene mirar el límite del plan en el dashboard de api-sports.io: cada liga nueva suma ~44 llamadas diarias.
 
 `ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 

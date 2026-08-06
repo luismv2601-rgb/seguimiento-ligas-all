@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.8.0 - 2026-08-06
+- **Ventana horaria 09:00–23:00 hora Perú.** Entre las 00:00 y las 08:00 no arranca ningún partido, así que esas corridas gastaban 86 llamadas cada una para no encontrar nada. El cron de Cloud Scheduler pasa de `0 * * * *` a `0 9-23 * * *` y el de respaldo de GitHub a las 8 horas UTC que caen dentro de la ventana. Cierra a las 23:00 y no a las 22:00 para alcanzar los partidos que arrancan ~20:30 y terminan pasadas las 22:00. Consumo de 2.924 a 1.892 llamadas diarias (−35%)
+- **`actualizar.py` saca de `Proximos` los partidos que ya dejaron de serlo**, en la misma corrida horaria. `Partidos` se actualizaba cada hora pero `Proximos` una vez por día, así que un partido ya jugado seguía figurando como programado hasta 17 horas — verificado en vivo: 8 partidos del 5 de agosto, entre ellos Boca-Estudiantes de las 17:00. Se borra por dos criterios: el `fixture_id` entró como jugado en esa corrida, o su horario pasó hace más de 4 horas. No cuesta ninguna llamada a la API
+- **`proximos.yml` pasa a dos disparos diarios** (09:00 y 21:00 UTC). Con uno solo, un salto del cron dejaba la pestaña 48 horas vieja
+- **`analisis_extremos.yml` pasa a tener cron diario** (10:30 UTC). Era la única pestaña que no se actualizaba sola
+- **3 ligas más: Georgia (327), Kazajistán (389) y Estonia (329).** De 43 a **46 activas**. Son tres de las nueve ligas de verano descartadas el 2 de agosto por estar avanzadas; revisadas de nuevo, son las únicas que todavía tienen media temporada por delante (85, 80 y 77 partidos programados). Entraron 1.066 partidos de baseline y 356 de la temporada en curso. El filtro de alertas suprimió 13 cruces históricos sin crear un solo evento
+
 ## v1.7.0 - 2026-08-02
 - **De 24 a 43 ligas activas.** Primero 7: Bolivia (344), Canadá (479), Panamá (304), Guatemala (339), El Salvador (370), Honduras (234) y Nicaragua (396). Después 12 europeas que arrancaron entre el 18 de julio y el 2 de agosto: Ucrania (333), Croacia (210), Serbia (286), Chequia (345), Eslovaquia (332), Hungría (271), Bulgaria (172), Eslovenia (373), Macedonia (371), Montenegro (355), Luxemburgo (261) y Gales (110)
 - Bolivia cierra el hueco de Sudamérica: era la única de las 10 de CONMEBOL que nunca había estado en el catálogo. Se revisaron además 32 países europeos que el catálogo original no cubría
