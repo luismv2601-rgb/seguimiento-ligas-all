@@ -1,0 +1,37 @@
+name: Limpiar Duplicados
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: 'Escribir "si" para borrar de verdad. Cualquier otra cosa es un ensayo.'
+        required: true
+        default: 'no'
+
+# Comparte grupo con actualizar.yml: los dos escriben en la pestana Partidos y no
+# pueden correr a la vez, que es justamente lo que genero los duplicados.
+concurrency:
+  group: actualizar-seguimiento
+  cancel-in-progress: false
+
+jobs:
+  limpiar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Limpiar duplicados
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          CONFIRMAR: ${{ inputs.confirmar }}
+        run: python limpiar_duplicados.py
