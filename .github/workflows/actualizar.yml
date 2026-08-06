@@ -10,6 +10,17 @@ on:
     - cron: '0 0,2,4,14,16,18,20,22 * * *'
   workflow_dispatch:
 
+# Dos corridas en paralelo duplican partidos: cada una lee los fixture_id ya
+# cargados al arrancar, asi que si la segunda empieza antes de que la primera
+# escriba, las dos ven el mismo partido como nuevo y las dos lo agregan. Paso el
+# 2026-08-02, cuando el cron de GitHub cayo a 52 segundos del disparo de Cloud
+# Scheduler (16:59:29 y 17:00:21 UTC): 20 partidos duplicados.
+# cancel-in-progress en false a proposito: la segunda espera y arranca despues,
+# en vez de matar a la primera a mitad de escritura.
+concurrency:
+  group: actualizar-seguimiento
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
