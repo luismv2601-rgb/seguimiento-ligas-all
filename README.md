@@ -58,7 +58,7 @@ La `region` no es decorativa: la web agrupa la lista por continente y la lee de 
 
 Varias son ligas de calendario, con la temporada dentro del mismo año: Noruega, Suecia, Chile, Ecuador, Venezuela, Bolivia, Panamá, MLS, Canadá, Corea y China. El resto cruza de un año al siguiente.
 
-**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 86 con las 43 activas. Entre Cloud Scheduler (24 al día) y el cron de GitHub (~8) son unas **2.800 llamadas diarias**, más 86 de `proximos.py`. Antes de sumar muchas ligas más conviene mirar el límite del plan en el dashboard de api-sports.io.
+**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 86 con las 43 activas. Entre Cloud Scheduler (15 al día, ventana 09:00–23:00 hora Perú) y el cron de GitHub (~5) son unas **1.720 llamadas diarias**, más 172 de `proximos.py`. Antes de sumar muchas ligas más conviene mirar el límite del plan en el dashboard de api-sports.io: cada liga nueva suma ~40 llamadas diarias.
 
 `ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 
@@ -160,7 +160,7 @@ Cuenta de servicio con las siguientes APIs habilitadas: **Google Sheets API**, *
 
 | Workflow | Disparo | Para qué |
 |---|---|---|
-| `actualizar.yml` | cada hora (ver abajo) | Mantiene el sistema al día: partidos nuevos, rachas y alertas |
+| `actualizar.yml` | cada hora de 09:00 a 23:00 hora Perú (ver abajo) | Mantiene el sistema al día: partidos nuevos, rachas y alertas |
 | `proximos.yml` | diario, 05:00 hora Perú | Regenera la pestaña `Proximos` |
 | `analisis_extremos.yml` | diario, 05:30 hora Perú | Regenera la pestaña `Analisis 2` |
 | `cargar_historico.yml` | manual | Carga el baseline 2024-2025 de las ligas que no lo tengan |
@@ -173,8 +173,10 @@ Cuenta de servicio con las siguientes APIs habilitadas: **Google Sheets API**, *
 
 | Disparador | Frecuencia | Rol |
 |---|---|---|
-| Google Cloud Scheduler (job `actualizar-seguimiento-ligas`) | cada hora en punto, `America/Lima` | Principal |
-| `schedule` de GitHub Actions (`0 */2 * * *`) | ~8 veces al día, irregular | Respaldo |
+| Google Cloud Scheduler (job `actualizar-seguimiento-ligas`) | `0 9-23 * * *`, `America/Lima` | Principal |
+| `schedule` de GitHub Actions (`0 0,2,4,14,16,18,20,22 * * *`) | ~5 veces al día, irregular | Respaldo |
+
+**Ventana horaria: 09:00 a 23:00 hora Perú.** Entre las 00:00 y las 08:00 no arranca ningún partido, así que correr en esa franja gastaba llamadas a la API sin encontrar nada. Se cierra a las 23:00 y no a las 22:00 para alcanzar a los partidos que empiezan cerca de las 20:30 y terminan pasadas las 22:00.
 
 El motivo es que los `schedule` de GitHub Actions son best-effort: en la práctica descartan ~1 de cada 3 disparos y se retrasan hasta ~90 minutos, dejando huecos de hasta 4 horas justo en la franja nocturna donde terminan los partidos sudamericanos. Cloud Scheduler sí es puntual.
 

@@ -2,7 +2,12 @@ name: Actualizar Seguimiento
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    # Respaldo de Cloud Scheduler, que es el disparador principal. Se limita a la
+    # misma ventana: 09:00 a 23:00 hora Peru, o sea 14:00 a 04:00 UTC. Entre las
+    # 00:00 y las 08:00 hora Peru no arranca ningun partido, asi que correr ahi
+    # era gastar llamadas a la API para no encontrar nada.
+    # 14=09:00, 16=11:00, 18=13:00, 20=15:00, 22=17:00, 00=19:00, 02=21:00, 04=23:00.
+    - cron: '0 0,2,4,14,16,18,20,22 * * *'
   workflow_dispatch:
 
 jobs:
