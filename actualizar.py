@@ -165,21 +165,37 @@ def ordenar_por_columna(ws, nombre_hoja, columna):
 
 PESTANA_PROXIMOS = "Proximos"
 
+# Un partido dura ~2 horas. Pasadas 4 desde el pitazo inicial ya no es "proximo",
+# aunque su resultado todavia no haya entrado (partido suspendido, la API que
+# tarda en publicarlo, una liga que fallo en esta corrida).
+HORAS_PARA_VENCER_PROXIMO = 4
+
+
+def proximo_vencido(fecha, hora):
+    """True si el partido arranco hace mas de HORAS_PARA_VENCER_PROXIMO."""
+    try:
+        cuando = datetime.strptime(f"{fecha} {hora}", "%Y-%m-%d %H:%M")
+    except (TypeError, ValueError):
+        return False  # fila rota: se deja, la reescribe proximos.py
+    ahora = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=5)
+    return (ahora - cuando) > timedelta(hours=HORAS_PARA_VENCER_PROXIMO)
+
 
 def purgar_proximos(sheet, fixture_ids):
-    """Saca de 'Proximos' los partidos que esta corrida acaba de cargar como jugados.
+    """Saca de 'Proximos' los partidos que ya dejaron de serlo.
 
-    'Proximos' la reescribe entera proximos.py, que corre una vez por dia, pero
+    'Proximos' la reescribe entera proximos.py, que corre dos veces por dia, pero
     'Partidos' se actualiza cada hora. Entre una corrida y la otra un partido ya
-    jugado seguia figurando como programado hasta 17 horas. Se borra la fila en la
-    misma corrida que carga el resultado, y no cuesta ni una llamada a API-Football:
-    los fixture_id ya los trajo el pedido de partidos jugados.
+    jugado seguia figurando como programado hasta 17 horas.
 
-    No hace falta que sea perfecto ni que cubra bajas o reprogramaciones: la corrida
-    diaria de proximos.py reescribe la pestana entera y corrige cualquier resto.
+    Se borra una fila por dos motivos:
+    - su fixture_id entro como jugado en esta misma corrida, o
+    - su horario ya paso hace rato (proximo_vencido), que cubre lo que quedo de
+      corridas anteriores y los partidos cuyo resultado todavia no publico la API.
+
+    No cuesta ninguna llamada a API-Football: los fixture_id ya venian en el pedido
+    de partidos jugados y el horario ya estaba en la pestana.
     """
-    if not fixture_ids:
-        return 0
     try:
         ws = sheet.worksheet(PESTANA_PROXIMOS)
     except gspread.WorksheetNotFound:
@@ -189,10 +205,25 @@ def purgar_proximos(sheet, fixture_ids):
     if len(valores) < 3:  # fila de titulo + encabezados, sin datos
         return 0
 
+    # Columnas fecha y hora_peru segun el encabezado, que esta en la fila 2.
+    encabezado = valores[1]
+    try:
+        col_fecha = encabezado.index("fecha")
+        col_hora = encabezado.index("hora_peru")
+    except ValueError:
+        col_fecha = col_hora = None
+
+    def sobra(fila):
+        if str(fila[0]).strip() in fixture_ids:
+            return True  # ya cargado como jugado en esta corrida
+        if col_fecha is None or len(fila) <= max(col_fecha, col_hora):
+            return False
+        return proximo_vencido(fila[col_fecha], fila[col_hora])
+
     # Indices base 0. Los datos arrancan en la fila 3 de la hoja (indice 2).
     a_borrar = [
         i for i, fila in enumerate(valores)
-        if i >= 2 and fila and str(fila[0]).strip() in fixture_ids
+        if i >= 2 and fila and sobra(fila)
     ]
     if not a_borrar:
         return 0
