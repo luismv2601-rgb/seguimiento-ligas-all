@@ -188,6 +188,10 @@ Cuenta de servicio con las siguientes APIs habilitadas: **Google Sheets API**, *
 | `cargar_historico.yml` | manual | Carga el baseline 2024-2025 de las ligas que no lo tengan |
 | `buscar_ligas.yml` | manual | Busca el `liga_id` de un país antes de agregarlo |
 | `estado_ligas.yml` | manual | Dice si la temporada de una liga ya arrancó y cuándo juega |
+| `limpiar_duplicados.yml` | manual | Borra de `Partidos` las filas repetidas por `fixture_id` |
+| `reconstruir_ranking.yml` | manual | Recalcula `Ranking_Empates` entera desde `Partidos` |
+
+> Los dos últimos son de reparación: nacieron para limpiar lo que dejó una condición de carrera entre corridas solapadas de `actualizar.py`, ya resuelta con el grupo de concurrencia. Los dos **no escriben nada** salvo que se les pase `confirmar: si` — sin eso hacen un ensayo y muestran qué cambiarían. Y los dos comparten grupo de concurrencia con `actualizar.yml`, porque escriben en las mismas pestañas.
 
 ### Quién dispara `actualizar.yml`
 
