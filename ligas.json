@@ -41,5 +41,8 @@
   { "id": 371, "nombre": "First League",                  "pais": "Macedonia",      "region": "Europa",     "activa": true },
   { "id": 355, "nombre": "First League",                  "pais": "Montenegro",     "region": "Europa",     "activa": true },
   { "id": 261, "nombre": "National Division",             "pais": "Luxemburgo",     "region": "Europa",     "activa": true },
-  { "id": 110, "nombre": "Premier League",                "pais": "Gales",          "region": "Europa",     "activa": true }
+  { "id": 110, "nombre": "Premier League",                "pais": "Gales",          "region": "Europa",     "activa": true },
+  { "id": 327, "nombre": "Erovnuli Liga",                 "pais": "Georgia",        "region": "Europa",     "activa": true },
+  { "id": 389, "nombre": "Premier League",                "pais": "Kazajistán",     "region": "Europa",     "activa": true },
+  { "id": 329, "nombre": "Meistriliiga",                  "pais": "Estonia",        "region": "Europa",     "activa": true }
 ]
