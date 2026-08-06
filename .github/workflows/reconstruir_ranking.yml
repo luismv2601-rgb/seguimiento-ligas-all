@@ -1,0 +1,37 @@
+name: Reconstruir Ranking
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: 'Escribir "si" para reescribir la pestana. Cualquier otra cosa es un ensayo.'
+        required: true
+        default: 'no'
+
+# Mismo grupo que actualizar.yml: los dos escriben en Ranking_Empates y no pueden
+# correr a la vez, que es justamente lo que rompio la pestana.
+concurrency:
+  group: actualizar-seguimiento
+  cancel-in-progress: false
+
+jobs:
+  reconstruir:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Reconstruir Ranking_Empates
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          CONFIRMAR: ${{ inputs.confirmar }}
+        run: python reconstruir_ranking.py
