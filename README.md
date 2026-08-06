@@ -6,36 +6,55 @@ Sistema automatizado que monitorea ligas de fútbol y calcula, para cada una, un
 
 A diferencia de versiones anteriores del proyecto (umbral fijo en 5 para todas las ligas), acá el umbral se calcula por liga a partir de su propio histórico: **promedio + 1 desviación estándar** de las rachas observadas entre 2024 y 2025.
 
-Actualmente hay **46 ligas activas** — 27 europeas, 9 de Norte y Centroamérica, 8 sudamericanas y 2 asiáticas — sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24 → 31 → 43 → 46) para validar la calidad de los datos antes de escalar:
+Actualmente hay **65 ligas activas** — 46 europeas, 9 de Norte y Centroamérica, 8 sudamericanas y 2 asiáticas — sumadas en un rollout por etapas (1 → 3 → 6 → 9 → 17 → 24 → 31 → 43 → 46 → 65) para validar la calidad de los datos antes de escalar:
 
 | `liga_id` | Liga | País | Región |
 |---|---|---|---|
+| 310 | Superliga | Albania | Europa |
+| 78 | Bundesliga | Alemania | Europa |
 | 342 | Premier League | Armenia | Europa |
 | 218 | Bundesliga | Austria | Europa |
+| 419 | Premyer Liqa | Azerbaiyán | Europa |
+| 144 | Jupiler Pro League | Bélgica | Europa |
 | 116 | Premier League | Bielorrusia | Europa |
+| 315 | Premijer Liga | Bosnia | Europa |
 | 172 | First League | Bulgaria | Europa |
 | 345 | Czech Liga | Chequia | Europa |
+| 318 | 1. Division | Chipre | Europa |
 | 210 | HNL | Croacia | Europa |
 | 119 | Superliga | Dinamarca | Europa |
 | 179 | Premiership | Escocia | Europa |
 | 332 | Super Liga | Eslovaquia | Europa |
 | 373 | 1. SNL | Eslovenia | Europa |
+| 140 | La Liga | España | Europa |
 | 329 | Meistriliiga | Estonia | Europa |
-| 327 | Erovnuli Liga | Georgia | Europa |
+| 61 | Ligue 1 | Francia | Europa |
 | 110 | Premier League | Gales | Europa |
+| 327 | Erovnuli Liga | Georgia | Europa |
+| 197 | Super League 1 | Grecia | Europa |
 | 271 | NB I | Hungría | Europa |
+| 40 | Championship | Inglaterra | Europa |
+| 39 | Premier League | Inglaterra | Europa |
+| 408 | Premiership | Irlanda del Norte | Europa |
+| 383 | Ligat Ha'al | Israel | Europa |
+| 135 | Serie A | Italia | Europa |
 | 389 | Premier League | Kazajistán | Europa |
+| 664 | Superliga | Kosovo | Europa |
 | 365 | Virsliga | Letonia | Europa |
 | 261 | National Division | Luxemburgo | Europa |
 | 371 | First League | Macedonia | Europa |
+| 393 | Premier League | Malta | Europa |
 | 355 | First League | Montenegro | Europa |
 | 103 | Eliteserien | Noruega | Europa |
+| 88 | Eredivisie | Países Bajos | Europa |
 | 106 | Ekstraklasa | Polonia | Europa |
+| 94 | Primeira Liga | Portugal | Europa |
 | 283 | Liga I | Rumania | Europa |
 | 235 | Premier League | Rusia | Europa |
 | 286 | Super Liga | Serbia | Europa |
 | 113 | Allsvenskan | Suecia | Europa |
 | 207 | Super League | Suiza | Europa |
+| 203 | Süper Lig | Turquía | Europa |
 | 333 | Premier League | Ucrania | Europa |
 | 479 | Canadian Premier League | Canadá | Norte y Centroamérica |
 | 162 | Primera División | Costa Rica | Norte y Centroamérica |
@@ -61,7 +80,7 @@ La `region` no es decorativa: la web agrupa la lista por continente y la lee de 
 
 Varias son ligas de calendario, con la temporada dentro del mismo año: Noruega, Suecia, Chile, Ecuador, Venezuela, Bolivia, Panamá, MLS, Canadá, Corea y China. El resto cruza de un año al siguiente.
 
-**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 92 con las 46 activas. Entre Cloud Scheduler (15 al día, ventana 09:00–23:00 hora Perú) y el cron de GitHub (~5) son unas **1.840 llamadas diarias**, más 184 de `proximos.py`. Antes de sumar muchas ligas más conviene mirar el límite del plan en el dashboard de api-sports.io: cada liga nueva suma ~44 llamadas diarias.
+**Consumo de API.** Cada corrida de `actualizar.py` hace 2 llamadas por liga, o sea 130 con las 65 activas. Entre Cloud Scheduler (15 al día, ventana 09:00–23:00 hora Perú) y el cron de GitHub (~5) son unas **2.600 llamadas diarias**, más 260 de `proximos.py`: **~2.860 en total, el 38% del límite del plan, que es de 7.500 diarias**. Cada liga nueva suma ~44.
 
 `ligas.json` define solo las ligas activas (cada una con `"activa": true`) — agregar una liga nueva es agregar su entrada al archivo con `"activa": true` y correr `cargar_historico.yml` para cargar su histórico; poner `"activa": false` en una liga existente la saca del seguimiento sin borrarla del archivo, si se prefiere pausarla en vez de eliminarla.
 
@@ -79,7 +98,7 @@ API-Football (api-sports.io)
         ├──► cargar_historico.py  (una sola vez / bajo demanda)
         │         └──► carga 2024+2025, calcula el baseline estadístico
         │
-        └──► actualizar.py  (cada hora, Google Cloud Scheduler)
+        └──► actualizar.py  (cada hora de 09:00 a 23:00 Perú, Google Cloud Scheduler)
                   └──► carga partidos nuevos, actualiza rachas, dispara alertas
 
                             │
