@@ -115,7 +115,7 @@ Las dos deben quedar siempre ordenadas de mayor a menor por su columna de porcen
 
 **Estado** — bitácora simple (`clave, valor`) con la fecha de la última carga/ejecución y errores si los hay.
 
-**Analisis 2** — reporte derivado, una fila por liga: cuántas rachas alcanzaron el **doble** del umbral por temporada, qué porcentaje representan sobre los empates de esa temporada, y los largos concretos. Se regenera entera con `analisis_extremos.yml` (manual).
+**Analisis 2** — reporte derivado, una fila por liga: cuántas rachas alcanzaron el **doble** del umbral por temporada, qué porcentaje representan sobre los empates de esa temporada, y los largos concretos. Se regenera entera con `analisis_extremos.yml`, una vez por día y también a mano.
 
 **Proximos** — partidos programados de los próximos 14 días: `fixture_id, liga_id, liga, pais, temporada, fecha, hora_peru, equipo_local, equipo_visitante, ronda, dias_para`. Solo estado `NS`, o sea con hora confirmada; los `TBD` quedan afuera. Se reescribe entera una vez por día con `proximos.yml`.
 
@@ -162,8 +162,8 @@ Cuenta de servicio con las siguientes APIs habilitadas: **Google Sheets API**, *
 |---|---|---|
 | `actualizar.yml` | cada hora (ver abajo) | Mantiene el sistema al día: partidos nuevos, rachas y alertas |
 | `proximos.yml` | diario, 05:00 hora Perú | Regenera la pestaña `Proximos` |
+| `analisis_extremos.yml` | diario, 05:30 hora Perú | Regenera la pestaña `Analisis 2` |
 | `cargar_historico.yml` | manual | Carga el baseline 2024-2025 de las ligas que no lo tengan |
-| `analisis_extremos.yml` | manual | Regenera la pestaña `Analisis 2` |
 | `buscar_ligas.yml` | manual | Busca el `liga_id` de un país antes de agregarlo |
 | `estado_ligas.yml` | manual | Dice si la temporada de una liga ya arrancó y cuándo juega |
 
